@@ -4,11 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import styles from "../styles/Home.module.css";
 import React, { useState, useEffect } from "react";
-// USD - United States Dollars
-import { currencyPairs } from "../utils/currencyPairs";
 import axios from "axios";
 
+import ExchangeDetails from "../components/ExchangeDetails";
 import CurrencySelector from "../components/CurrencySelector";
+import { areEqual } from "../utils";
 
 const PROXY_URL = "http://localhost:4400";
 const CONVERT_CURRENCY_URL = `${PROXY_URL}/convert`;
@@ -16,22 +16,36 @@ const CONVERT_CURRENCY_URL = `${PROXY_URL}/convert`;
 const Home: NextPage = () => {
   const [firstCurrencyCode, setFirstCurrencyCode] = useState("USD");
   const [secondCurrencyCode, setSecondCurrencyCode] = useState("RUB");
-  const [secondCurrencyValue, setSecondCurrencyValue] = useState(null);
+  const [firstCurrencyValue, setFirstCurrencyValue] =
+    useState<React.SetStateAction<number>>(1);
+  const [secondCurrencyValue, setSecondCurrencyValue] =
+    useState<React.SetStateAction<number>>();
+
+  const currenciesAreEqual = areEqual(firstCurrencyCode, secondCurrencyCode);
 
   useEffect(() => {
-    axios
-      .post(CONVERT_CURRENCY_URL, {
-        FIRST_CURRENCY_CODE: firstCurrencyCode,
-        SECOND_CURRENCY_CODE: secondCurrencyCode,
-      })
-      .then((response) => {
-        const { SECOND_CURRENCY_VALUE } = response.data;
-        setSecondCurrencyValue(SECOND_CURRENCY_VALUE);
-      });
+    if (currenciesAreEqual) {
+      setSecondCurrencyCode(firstCurrencyCode);
+      setSecondCurrencyValue(1);
+    } else {
+      axios
+        .post(CONVERT_CURRENCY_URL, {
+          FIRST_CURRENCY_CODE: firstCurrencyCode,
+          SECOND_CURRENCY_CODE: secondCurrencyCode,
+        })
+        .then((response) => {
+          const { SECOND_CURRENCY_VALUE } = response.data;
+          setSecondCurrencyValue(SECOND_CURRENCY_VALUE);
+        })
+        .catch((err) => {
+          console.log("PROXY SERVER REQUEST ERROR");
+          console.error(err);
+        });
+    }
     return () => {
       // cleanup
     };
-  }, [firstCurrencyCode, secondCurrencyCode]);
+  }, [firstCurrencyCode, secondCurrencyCode, currenciesAreEqual]);
 
   return (
     <div className={styles.container}>
@@ -43,15 +57,20 @@ const Home: NextPage = () => {
 
       <main className={styles.main}>
         <h1 className={styles.title}>Currency converter</h1>
-        <h3>
-          1 {firstCurrencyCode} ={" "}
-          {secondCurrencyValue ? secondCurrencyValue : "Loading..."}{" "}
-          {secondCurrencyCode}
-        </h3>
+        <ExchangeDetails
+          firstCurrencyDetails={{
+            firstCurrencyCode,
+            firstCurrencyValue,
+          }}
+          secondCurrencyDetails={{
+            secondCurrencyCode,
+            secondCurrencyValue,
+          }}
+        />
         <div className={styles.comparisonContainer}>
-          <div className="input-container" id="input-container-1">
-            <label htmlFor="amount-input-1">
-              Amount: {"  "}
+          <div className={styles.inputContainer} id="input-container-1">
+            <label htmlFor="amount-input-1" className={styles.amountInput}>
+              Amount {"  "}
               <input type="text" name="amount-input-1" />
             </label>
             <CurrencySelector
@@ -60,9 +79,9 @@ const Home: NextPage = () => {
               setCurrencyCode={setFirstCurrencyCode}
             />
           </div>
-          <div className="input-container" id="input-container-2">
-            <label htmlFor="amount-input-2">
-              Amount: {"  "}
+          <div className={styles.inputContainer} id="input-container-2">
+            <label htmlFor="amount-input-2" className={styles.amountInput}>
+              Amount {"  "}
               <input type="text" name="amount-input-2" />
             </label>
             <CurrencySelector

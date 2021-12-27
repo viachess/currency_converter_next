@@ -49,6 +49,26 @@
 }
 
 .comparisonContainer {
+  font-size: 1.2rem;
   display: flex;
+  align-items: center;
   gap: 3rem;
+  padding: 1.5rem 0;
+}
+
+.inputContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.5rem 0;
+}
+
+/* .amountInput {
+  
+} */
+.amountInput input {
+  border-radius: 6px;
+  /* padding: 0.4rem; */
+  padding: 0.3rem 0;
+  caret-color: violet;
 }
