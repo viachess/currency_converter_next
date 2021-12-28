@@ -65,3 +65,21 @@ export const currencyPairs: CurrencyHashTable = {
   XOF: "CFA Franc BCEAO",
   ZAR: "South African Rand",
 };
+
+export interface CurrencySelectOption {
+  value: CurrencyCode;
+  label: string;
+}
+
+export const getSelectOptions = (pairsObject: CurrencyHashTable) => {
+  const formattedSelectOptions: CurrencySelectOption[] = Object.entries(
+    pairsObject
+  ).map((entry) => {
+    const [currencyCode, currencyDescription] = entry;
+    return {
+      value: currencyCode,
+      label: `${currencyCode} - ${currencyDescription}`,
+    };
+  });
+  return formattedSelectOptions;
+};

@@ -1,25 +1,25 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import Image from "next/image";
-import Link from "next/link";
-import styles from "../styles/Home.module.css";
-import React, { useState, useEffect } from "react";
+import styles from "@/styles/Home.module.css";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
-import ExchangeDetails from "../components/ExchangeDetails";
-import CurrencySelector from "../components/CurrencySelector";
-import { areEqual } from "../utils";
+import ExchangeDetails from "@/components/ExchangeDetails";
+import CurrencySelector from "@/components/CurrencySelector";
+import { areEqual } from "@/utils";
+import AmountInput from "@/components/AmountInput";
 
 const PROXY_URL = "http://localhost:4400";
 const CONVERT_CURRENCY_URL = `${PROXY_URL}/convert`;
 
 const Home: NextPage = () => {
-  const [firstCurrencyCode, setFirstCurrencyCode] = useState("USD");
-  const [secondCurrencyCode, setSecondCurrencyCode] = useState("RUB");
-  const [firstCurrencyValue, setFirstCurrencyValue] =
-    useState<React.SetStateAction<number>>(1);
-  const [secondCurrencyValue, setSecondCurrencyValue] =
-    useState<React.SetStateAction<number>>();
+  const [firstCurrencyCode, setFirstCurrencyCode] = useState<string>("USD");
+  const [secondCurrencyCode, setSecondCurrencyCode] = useState<string>("RUB");
+  const [firstCurrencyValue, setFirstCurrencyValue] = useState<number>(1);
+  const [secondCurrencyValue, setSecondCurrencyValue] = useState<number>(1);
+  const [currencyRatio, setCurrencyRatio] = useState<number>(1);
+
+  // On amount input, perform validation. If the input is valid
 
   const currenciesAreEqual = areEqual(firstCurrencyCode, secondCurrencyCode);
 
@@ -27,6 +27,7 @@ const Home: NextPage = () => {
     if (currenciesAreEqual) {
       setSecondCurrencyCode(firstCurrencyCode);
       setSecondCurrencyValue(1);
+      setCurrencyRatio(1);
     } else {
       axios
         .post(CONVERT_CURRENCY_URL, {
@@ -34,8 +35,9 @@ const Home: NextPage = () => {
           SECOND_CURRENCY_CODE: secondCurrencyCode,
         })
         .then((response) => {
-          const { SECOND_CURRENCY_VALUE } = response.data;
-          setSecondCurrencyValue(SECOND_CURRENCY_VALUE);
+          const { CURRENCY_RATIO } = response.data;
+          setSecondCurrencyValue(Number(CURRENCY_RATIO));
+          setCurrencyRatio(Number(CURRENCY_RATIO));
         })
         .catch((err) => {
           console.log("PROXY SERVER REQUEST ERROR");
@@ -58,6 +60,7 @@ const Home: NextPage = () => {
       <main className={styles.main}>
         <h1 className={styles.title}>Currency converter</h1>
         <ExchangeDetails
+          currencyRatio={currencyRatio}
           firstCurrencyDetails={{
             firstCurrencyCode,
             firstCurrencyValue,
@@ -69,10 +72,13 @@ const Home: NextPage = () => {
         />
         <div className={styles.comparisonContainer}>
           <div className={styles.inputContainer} id="input-container-1">
-            <label htmlFor="amount-input-1" className={styles.amountInput}>
-              Amount {"  "}
-              <input type="text" name="amount-input-1" />
-            </label>
+            <AmountInput
+              id={"amount-input-1"}
+              currencyRatio={currencyRatio}
+              firstCurrencyValue={firstCurrencyValue}
+              setFirstCurrencyValue={setFirstCurrencyValue}
+              readonly={false}
+            />
             <CurrencySelector
               id="currency-select-1"
               currencyCode={firstCurrencyCode}
@@ -80,10 +86,13 @@ const Home: NextPage = () => {
             />
           </div>
           <div className={styles.inputContainer} id="input-container-2">
-            <label htmlFor="amount-input-2" className={styles.amountInput}>
-              Amount {"  "}
-              <input type="text" name="amount-input-2" />
-            </label>
+            <AmountInput
+              id={"amount-input-2"}
+              currencyRatio={currencyRatio}
+              firstCurrencyValue={firstCurrencyValue}
+              setFirstCurrencyValue={setFirstCurrencyValue}
+              readonly={true}
+            />
             <CurrencySelector
               id="currency-select-2"
               currencyCode={secondCurrencyCode}

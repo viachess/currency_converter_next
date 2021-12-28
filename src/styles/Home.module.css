@@ -41,6 +41,24 @@
   margin: 0;
   line-height: 1.15;
   font-size: 4rem;
+  /* Uncomment for gradient animation */
+  /* background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); */
+  background-size: 400% 400%;
+  background-clip: text;
+  /* color: transparent; */
+  /* animation: gradient-flow 7s ease infinite; */
+}
+
+@keyframes gradient-flow {
+  0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
 }
 
 .title,
@@ -51,24 +69,28 @@
 .comparisonContainer {
   font-size: 1.2rem;
   display: flex;
-  align-items: center;
-  gap: 3rem;
+  /* align-items: center; */
+  flex-direction: column;
+  gap: 2rem;
   padding: 1.5rem 0;
 }
 
 .inputContainer {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0.5rem 0;
+  justify-content: center;
+  gap: 20px;
 }
 
-/* .amountInput {
-  
-} */
 .amountInput input {
-  border-radius: 6px;
-  /* padding: 0.4rem; */
-  padding: 0.3rem 0;
+  border:none;
+  border-radius: 2px;
   caret-color: violet;
+  outline: solid 1px rgba(200, 198, 198, 0.849);
+  font-size: 1.2rem;
+  /* padding: 0.4rem; */
+  padding: 0.5rem;
+}
+.amountInput input:focus {
+  outline: solid 2px violet;
 }

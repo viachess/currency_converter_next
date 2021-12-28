@@ -6,6 +6,7 @@ export const ExchangeDetails = (props: any) => {
   const { firstCurrencyCode, firstCurrencyValue } = props.firstCurrencyDetails;
   const { secondCurrencyCode, secondCurrencyValue } =
     props.secondCurrencyDetails;
+  const { currencyRatio } = props;
   const areCodesEqual = areEqual(firstCurrencyCode, secondCurrencyCode);
 
   const DisplaySameValues = (): JSX.Element => {
@@ -20,8 +21,8 @@ export const ExchangeDetails = (props: any) => {
   const DisplayExchangeDetails = (): JSX.Element => {
     return (
       <>
-        {firstCurrencyValue} {firstCurrencyCode} = {secondCurrencyValue}{" "}
-        {secondCurrencyCode}
+        {firstCurrencyValue} {firstCurrencyCode} ={" "}
+        {firstCurrencyValue * currencyRatio} {secondCurrencyCode}
       </>
     );
   };

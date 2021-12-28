@@ -1,0 +1,10 @@
+.selectContainer {
+    width: 360px;
+    font-size: 1.2rem;
+    outline: violet;
+}
+.selectContainer:hover {
+    outline: violet;
+    border-color: violet;
+
+}
