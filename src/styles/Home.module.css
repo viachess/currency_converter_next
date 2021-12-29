@@ -3,7 +3,7 @@
 }
 
 .main {
-  min-height: 100vh;
+  min-height: 90vh;
   padding: 4rem 0;
   flex: 1;
   display: flex;
@@ -14,11 +14,15 @@
 
 .footer {
   display: flex;
-  flex: 1;
   padding: 2rem 0;
   border-top: 1px solid #eaeaea;
   justify-content: center;
   align-items: center;
+}
+
+.footer a {
+  font-size: 1.2rem;
+  color: #0070f3;
 }
 
 .title {
@@ -42,11 +46,11 @@
   line-height: 1.15;
   font-size: 4rem;
   /* Uncomment for gradient animation */
-  /* background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); */
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
   background-size: 400% 400%;
   background-clip: text;
-  /* color: transparent; */
-  /* animation: gradient-flow 7s ease infinite; */
+  color: transparent; 
+  animation: gradient-flow 7s ease infinite;
 }
 
 @keyframes gradient-flow {

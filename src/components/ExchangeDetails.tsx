@@ -12,8 +12,7 @@ export const ExchangeDetails = (props: any) => {
   const DisplaySameValues = (): JSX.Element => {
     return (
       <>
-        {firstCurrencyValue} {firstCurrencyCode} = {firstCurrencyValue}{" "}
-        {firstCurrencyCode}
+        {1} {firstCurrencyCode} = {1} {firstCurrencyCode}
       </>
     );
   };
@@ -21,8 +20,7 @@ export const ExchangeDetails = (props: any) => {
   const DisplayExchangeDetails = (): JSX.Element => {
     return (
       <>
-        {firstCurrencyValue} {firstCurrencyCode} ={" "}
-        {firstCurrencyValue * currencyRatio} {secondCurrencyCode}
+        {1} {firstCurrencyCode} = {1 * currencyRatio} {secondCurrencyCode}
       </>
     );
   };
