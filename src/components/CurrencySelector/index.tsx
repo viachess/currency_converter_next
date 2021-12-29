@@ -5,6 +5,7 @@ import {
   currencyPairs,
   getSelectOptions,
   CurrencySelectOption,
+  flagObject,
 } from "../../utils/currencyPairs";
 
 import Select, { ActionMeta, StylesConfig } from "react-select";
@@ -36,6 +37,26 @@ const CurrencySelector = ({
     newValue ? setCurrencyCode(newValue) : null;
   };
 
+  const flag = (value: string) => {
+    // console.log(flagObject[value]);
+    return {
+      alignItems: "center",
+      display: "flex",
+
+      ":before": {
+        backgroundImage: `url('${flagObject[value]}')`,
+        backgroundPosition: "center",
+        backgroundSize: "100%",
+        // borderRadius: 10,
+        content: '" "',
+        display: "block",
+        marginRight: 8,
+        height: 12,
+        width: 23,
+      },
+    };
+  };
+
   const selectorStyles = {
     control: (styles: any) => {
       return {
@@ -47,7 +68,7 @@ const CurrencySelector = ({
         },
       };
     },
-    option: (styles: any, { isSelected, isFocused }: any) => {
+    option: (styles: any, { isSelected, isFocused, data }: any) => {
       const violet = "rgb(238,130,238)";
       const fadedViolet = "rgba(238,130,238,0.2)";
       return {
@@ -58,11 +79,22 @@ const CurrencySelector = ({
           : isFocused
           ? fadedViolet
           : "white",
+        ...flag(data.value),
         ":active": {
           ...styles[":active"],
           backgroundColor: isSelected ? violet : undefined,
         },
       };
+    },
+    input: (styles: any) => ({ ...styles }),
+    placeholder: (styles: any, { data }: any) => ({
+      ...styles,
+      ...flag(data.value),
+    }),
+    singleValue: (styles: any, { data }: any) => {
+      // console.log(data);
+      // return { ...styles, ...flag(data?.value) };
+      return { ...styles, ...flag(data.value) };
     },
   };
 
