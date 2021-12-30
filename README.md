@@ -4,15 +4,15 @@ Inspired by Florin Pop's [App Ideas Collection](https://github.com/florinpop17/a
 Built using Next.js/React + TypeScript
 ### User stories
 
-- [] User can enter up to 9 digits to represent the amount to convert in a source input field  
-- [] User can view a sorted list of available currencies and select the currency to convert from in a source drop-down list  
-- [] User can view a sorted list of available currencies and select the currency to convert to in a destination drop-down list  
-- [] User views the value (rounded to two decimal places) of the source amount converted to the destination currency in a single output field as soon as either the input value, the source currency, or the destination currency is changed.  
-- [] User must be alerted if the input is not a number  
+[x] User can enter up to 9 digits to represent the amount to convert in a source input field  
+[x] User can view a sorted list of available currencies and select the currency to convert from in a source dropown list  
+[x] User can view a sorted list of available currencies and select the currency to convert to in a destination dropown list  
+[x] User views the value (rounded to two decimal places) of the source amount converted to the destination currency in a single output field as soon as either the input value, the source currency, or the destination currency is changed.  
+[x] User must be alerted if the input is not a number  
 
 ### Bonus features
 
-- [] User should be able to swap the values of the source and destination drop-down lists on the click of a button
+[] User should be able to swap the values of the source and destination drop-down lists on the click of a button
 
 ---
 
