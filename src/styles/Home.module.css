@@ -73,28 +73,16 @@
 .comparisonContainer {
   font-size: 1.2rem;
   display: flex;
-  /* align-items: center; */
+  align-items: center;
   flex-direction: column;
-  gap: 2rem;
+  /* justify-content: center; */
+  gap: 2.5rem;
   padding: 1.5rem 0;
 }
 
-.inputContainer {
+.selectorContainer {
   display: flex;
   align-items: center;
-  justify-content: center;
+  flex-direction: column;
   gap: 20px;
-}
-
-.amountInput input {
-  border:none;
-  border-radius: 2px;
-  caret-color: violet;
-  outline: solid 1px rgba(200, 198, 198, 0.849);
-  font-size: 1.2rem;
-  /* padding: 0.4rem; */
-  padding: 0.5rem;
-}
-.amountInput input:focus {
-  outline: solid 2px violet;
 }

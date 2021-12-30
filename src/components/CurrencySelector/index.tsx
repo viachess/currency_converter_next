@@ -1,4 +1,3 @@
-// import { CurrencyHashTable } from "../utils/currencyPairs";
 import React, { memo, useMemo } from "react";
 import styles from "./CurrencySelector.module.css";
 import {
@@ -38,16 +37,13 @@ const CurrencySelector = ({
   };
 
   const flag = (value: string) => {
-    // console.log(flagObject[value]);
     return {
       alignItems: "center",
       display: "flex",
-
       ":before": {
         backgroundImage: `url('${flagObject[value]}')`,
         backgroundPosition: "center",
         backgroundSize: "100%",
-        // borderRadius: 10,
         content: '" "',
         display: "block",
         marginRight: 8,
@@ -92,8 +88,6 @@ const CurrencySelector = ({
       ...flag(data.value),
     }),
     singleValue: (styles: any, { data }: any) => {
-      // console.log(data);
-      // return { ...styles, ...flag(data?.value) };
       return { ...styles, ...flag(data.value) };
     },
   };

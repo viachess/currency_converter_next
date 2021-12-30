@@ -1,0 +1,28 @@
+.amountInputContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.errorContainer {
+    min-height: 32px;
+    /* padding-bottom: 0.5rem; */
+}
+
+.error {
+    display: block;
+    color: red;
+    transition: all 0.3s ease;
+}
+
+.amountInput input {
+    border:none;
+    border-radius: 2px;
+    caret-color: violet;
+    outline: solid 1px rgba(200, 198, 198, 0.849);
+    font-size: 1.2rem;
+    padding: 0.5rem;
+}
+.amountInput input:focus {
+    outline: solid 2px violet;
+}
+  

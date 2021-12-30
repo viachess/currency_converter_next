@@ -1,78 +1,137 @@
-import React, { FormEvent, useEffect, useRef } from "react";
-import styles from "@/styles/Home.module.css";
+import React, { FormEvent, useEffect, useRef, useState } from "react";
+// import styles from "@/styles/Home.module.css";
+import styles from "./AmountInput.module.css";
 
 const AmountInput = ({
   id,
-  currencyRatio,
-  firstCurrencyValue,
-  setFirstCurrencyValue,
-  readonly,
+  setFromCurrencyValue,
 }: {
   id: string;
-  currencyRatio: number;
-  firstCurrencyValue: number | null;
-  setFirstCurrencyValue: React.Dispatch<React.SetStateAction<number | null>>;
-  readonly: boolean;
+  setFromCurrencyValue: React.Dispatch<React.SetStateAction<number | null>>;
 }) => {
+  const [errors, setErrors] = useState({
+    notANumber: {
+      message: "Invalid input, please enter a number",
+      status: false,
+    },
+    tooLong: {
+      message: "Entered number must be less than 10 symbols long",
+      status: false,
+    },
+  });
+
   const MAX_ALLOWED_NUMBER = 1000000000;
   const inputHandler = (e: FormEvent<HTMLInputElement>) => {
     const target = e.target as HTMLInputElement;
     const value = target.value;
     const isEmpty = value.trim().length === 0;
     const isNumber = !Number.isNaN(Number(value));
-    if (!isEmpty && isNumber && !readonly) {
+    console.log(value);
+    if (!isEmpty && isNumber) {
+      console.log("not empty & is number if");
+      setErrors({
+        ...errors,
+        tooLong: {
+          ...errors.tooLong,
+          status: false,
+        },
+        notANumber: {
+          ...errors.notANumber,
+          status: false,
+        },
+      });
+
+      if (Number(value) >= MAX_ALLOWED_NUMBER) {
+        setErrors({
+          ...errors,
+          tooLong: {
+            ...errors.tooLong,
+            status: true,
+          },
+        });
+        return;
+      }
       const isInteger = Number.isInteger(Number(value));
       if (isInteger) {
-        setFirstCurrencyValue(Number(value));
+        setFromCurrencyValue(Number(value));
       } else {
         const numberSplit = value.split(".");
         const floatingPart = numberSplit[1];
         if (floatingPart.length > 2) {
           const fixedFloatNumber = Number(Number.parseFloat(value).toFixed(2));
           target.value = fixedFloatNumber.toString();
-          setFirstCurrencyValue(fixedFloatNumber);
+          setFromCurrencyValue(fixedFloatNumber);
         } else {
-          setFirstCurrencyValue(Number(value));
+          setFromCurrencyValue(Number(value));
         }
       }
+    } else if (!isEmpty && !isNumber) {
+      console.log("not empty, not a number");
+      setErrors({
+        ...errors,
+        tooLong: {
+          ...errors.tooLong,
+          status: false,
+        },
+        notANumber: {
+          ...errors.notANumber,
+          status: true,
+        },
+      });
+      return;
     }
   };
 
   const changeHandler = (e: FormEvent<HTMLInputElement>) => {
-    const { value } = e.target as HTMLInputElement;
-    const isEmpty = value.trim().length === 0;
+    const target = e.target as HTMLInputElement;
+    const isEmpty = target.value.trim().length === 0;
     if (isEmpty) {
-      setFirstCurrencyValue(null);
+      setErrors({
+        ...errors,
+        tooLong: {
+          ...errors.tooLong,
+          status: false,
+        },
+        notANumber: {
+          ...errors.notANumber,
+          status: false,
+        },
+      });
+      setFromCurrencyValue(1);
     }
   };
 
   const onKeydownHandler = (e: FormEvent<HTMLInputElement>) => {
     const target = e.target as HTMLInputElement;
-    // const keyRegexp = new RegExp();
+    const event = e as FormEvent<HTMLInputElement>;
+    // console.log(e.key);
+    // console.log(e.key.length);
   };
 
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (inputRef.current && readonly) {
-      inputRef.current.value = firstCurrencyValue
-        ? (firstCurrencyValue * currencyRatio).toString()
-        : "";
-    }
-    return () => {};
-  }, [firstCurrencyValue, currencyRatio, readonly]);
-
   return (
-    <label htmlFor={id} className={styles.amountInput}>
-      <input
-        type="text"
-        name={id}
-        onInput={inputHandler}
-        onChange={changeHandler}
-        readOnly={readonly}
-        ref={inputRef}
-      />
-    </label>
+    <div className={styles.amountInputContainer}>
+      <div className={styles.errorContainer}>
+        {Object.entries(errors).map((entry, index) => {
+          const [errorName, errorValue] = entry;
+          if (errorValue.status) {
+            return (
+              <small key={index} className={styles.error}>
+                {errorValue.message}
+              </small>
+            );
+          }
+        })}
+      </div>
+      <label htmlFor={id} className={styles.amountInput}>
+        <input
+          type="text"
+          name={id}
+          onKeyDown={onKeydownHandler}
+          onInput={inputHandler}
+          onChange={changeHandler}
+        />
+      </label>
+    </div>
   );
 };
 
