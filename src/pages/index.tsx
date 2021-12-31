@@ -27,8 +27,7 @@ const SwapIcon = () => {
 };
 
 // const PROXY_URL = "http://localhost:4400";
-const PROXY_URL = "http://localhost:6001/api";
-const CONVERT_CURRENCY_URL = `${PROXY_URL}/convert`;
+const CONVERT_CURRENCY_URL = `/api/convert`;
 
 const Home: NextPage = () => {
   const [fromCurrencyCode, setFromCurrencyCode] = useState<string>("USD");
