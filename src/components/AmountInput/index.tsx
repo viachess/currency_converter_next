@@ -1,5 +1,4 @@
-import React, { FormEvent, useEffect, useRef, useState } from "react";
-// import styles from "@/styles/Home.module.css";
+import React, { FormEvent, useState } from "react";
 import styles from "./AmountInput.module.css";
 
 const AmountInput = ({
@@ -23,12 +22,10 @@ const AmountInput = ({
   const MAX_ALLOWED_NUMBER = 1000000000;
   const inputHandler = (e: FormEvent<HTMLInputElement>) => {
     const target = e.target as HTMLInputElement;
-    const value = target.value;
-    const isEmpty = value.trim().length === 0;
-    const isNumber = !Number.isNaN(Number(value));
-    console.log(value);
+    const trimmedValue = target.value.trim();
+    const isEmpty = trimmedValue.length === 0;
+    const isNumber = !Number.isNaN(Number(trimmedValue));
     if (!isEmpty && isNumber) {
-      console.log("not empty & is number if");
       setErrors({
         ...errors,
         tooLong: {
@@ -41,7 +38,7 @@ const AmountInput = ({
         },
       });
 
-      if (Number(value) >= MAX_ALLOWED_NUMBER) {
+      if (Number(trimmedValue) >= MAX_ALLOWED_NUMBER) {
         setErrors({
           ...errors,
           tooLong: {
@@ -51,22 +48,23 @@ const AmountInput = ({
         });
         return;
       }
-      const isInteger = Number.isInteger(Number(value));
+      const isInteger = Number.isInteger(Number(trimmedValue));
       if (isInteger) {
-        setFromCurrencyValue(Number(value));
+        setFromCurrencyValue(Number(trimmedValue));
       } else {
-        const numberSplit = value.split(".");
+        const numberSplit = trimmedValue.split(".");
         const floatingPart = numberSplit[1];
         if (floatingPart.length > 2) {
-          const fixedFloatNumber = Number(Number.parseFloat(value).toFixed(2));
+          const fixedFloatNumber = Number(
+            Number.parseFloat(trimmedValue).toFixed(2)
+          );
           target.value = fixedFloatNumber.toString();
           setFromCurrencyValue(fixedFloatNumber);
         } else {
-          setFromCurrencyValue(Number(value));
+          setFromCurrencyValue(Number(trimmedValue));
         }
       }
     } else if (!isEmpty && !isNumber) {
-      console.log("not empty, not a number");
       setErrors({
         ...errors,
         tooLong: {
@@ -101,13 +99,6 @@ const AmountInput = ({
     }
   };
 
-  const onKeydownHandler = (e: FormEvent<HTMLInputElement>) => {
-    const target = e.target as HTMLInputElement;
-    const event = e as FormEvent<HTMLInputElement>;
-    // console.log(e.key);
-    // console.log(e.key.length);
-  };
-
   return (
     <div className={styles.amountInputContainer}>
       <div className={styles.errorContainer}>
@@ -126,7 +117,6 @@ const AmountInput = ({
         <input
           type="text"
           name={id}
-          onKeyDown={onKeydownHandler}
           onInput={inputHandler}
           onChange={changeHandler}
         />

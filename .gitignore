@@ -9,7 +9,7 @@
 /coverage
 
 #vscode next js debugging settings
-/.vscode
+.vscode
 
 # next.js
 /.next/

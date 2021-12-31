@@ -12,7 +12,8 @@ Built using Next.js/React + TypeScript
 
 ### Bonus features
 
-[ ] User should be able to swap the values of the source and destination drop-down lists on the click of a button
+- [x] User should be able to swap the values of the source and destination drop-down lists on the click of a button
+- [] Display currencies ratio history with graph. Time period should be adjustable. (1d, 3d, 1m, 1y)
 
 ---
 

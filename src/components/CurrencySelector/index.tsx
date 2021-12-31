@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from "react";
+import React, { memo, useEffect, useMemo, useRef } from "react";
 import styles from "./CurrencySelector.module.css";
 import {
   currencyPairs,
@@ -7,7 +7,7 @@ import {
   flagObject,
 } from "../../utils/currencyPairs";
 
-import Select, { ActionMeta, StylesConfig } from "react-select";
+import Select, { ActionMeta } from "react-select";
 
 interface SelectorProps {
   readonly id: string;
@@ -23,10 +23,12 @@ const CurrencySelector = ({
   const memoizedSelectOptions = useMemo(() => {
     return getSelectOptions(currencyPairs);
   }, []);
-
-  const defaultSelectValue = memoizedSelectOptions.filter(
-    (item) => item.value === currencyCode
-  );
+  const currentSelectValue = useRef<CurrencySelectOption>();
+  useEffect(() => {
+    currentSelectValue.current = memoizedSelectOptions.filter(
+      (item) => item.value === currencyCode
+    )[0];
+  }, [currencyCode, memoizedSelectOptions]);
 
   const handleSelectChange = (
     option: CurrencySelectOption | null,
@@ -85,7 +87,7 @@ const CurrencySelector = ({
     input: (styles: any) => ({ ...styles }),
     placeholder: (styles: any, { data }: any) => ({
       ...styles,
-      ...flag(data.value),
+      ...flag(data?.value),
     }),
     singleValue: (styles: any, { data }: any) => {
       return { ...styles, ...flag(data.value) };
@@ -95,7 +97,7 @@ const CurrencySelector = ({
   return (
     <Select
       options={memoizedSelectOptions}
-      defaultValue={defaultSelectValue}
+      value={currentSelectValue.current}
       instanceId={id}
       onChange={handleSelectChange}
       className={styles.selectContainer}
