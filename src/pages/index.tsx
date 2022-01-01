@@ -32,7 +32,7 @@ const CONVERT_CURRENCY_URL = `/api/convert`;
 const Home: NextPage = () => {
   const [fromCurrencyCode, setFromCurrencyCode] = useState<string>("USD");
   const [toCurrencyCode, setToCurrencyCode] = useState<string>("RUB");
-  const [fromCurrencyValue, setFromCurrencyValue] = useState<number | null>(1);
+  const [fromCurrencyValue, setFromCurrencyValue] = useState<number>(1);
   const [toCurrencyValue, setToCurrencyValue] = useState<number | null>(null);
   const [currencyRatio, setCurrencyRatio] = useState<number>(1);
 
@@ -82,15 +82,10 @@ const Home: NextPage = () => {
       <main className={styles.main}>
         <h1 className={styles.title}>Currency converter</h1>
         <ExchangeDetails
+          fromCurrencyValue={fromCurrencyValue!}
+          fromCurrencyCode={fromCurrencyCode}
+          toCurrencyCode={toCurrencyCode}
           currencyRatio={currencyRatio}
-          fromCurrencyDetails={{
-            fromCurrencyCode,
-            fromCurrencyValue,
-          }}
-          toCurrencyDetails={{
-            toCurrencyCode,
-            toCurrencyValue,
-          }}
         />
         <div className={styles.comparisonContainer}>
           <AmountInput

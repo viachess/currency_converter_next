@@ -6,7 +6,7 @@ const AmountInput = ({
   setFromCurrencyValue,
 }: {
   id: string;
-  setFromCurrencyValue: React.Dispatch<React.SetStateAction<number | null>>;
+  setFromCurrencyValue: React.Dispatch<React.SetStateAction<number>>;
 }) => {
   const [errors, setErrors] = useState({
     notANumber: {

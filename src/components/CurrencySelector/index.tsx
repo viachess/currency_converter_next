@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useRef } from "react";
+import React, { memo, useState, useEffect, useMemo, useRef } from "react";
 import styles from "./CurrencySelector.module.css";
 import {
   currencyPairs,
@@ -15,20 +15,63 @@ interface SelectorProps {
   readonly currencyCode: string;
 }
 
+function throttle(cb: Function, timeout: number) {
+  let wait = false;
+  return function () {
+    if (!wait) {
+      cb.call(null, arguments);
+      wait = true;
+      setTimeout(() => {
+        wait = false;
+      }, timeout);
+    }
+  };
+}
+
 const CurrencySelector = ({
   id,
   setCurrencyCode,
   currencyCode,
 }: SelectorProps): JSX.Element => {
-  const memoizedSelectOptions = useMemo(() => {
-    return getSelectOptions(currencyPairs);
+  const memoizedDesktopOptions = useMemo(() => {
+    return getSelectOptions(currencyPairs, "desktop");
   }, []);
-  const currentSelectValue = useRef<CurrencySelectOption>();
+  const memoizedMobileOptions = useMemo(() => {
+    return getSelectOptions(currencyPairs, "mobile");
+  }, []);
+  const [selectOptions, setSelectOptions] = useState<CurrencySelectOption[]>();
+  const [currentSelectValue, setCurrentSelectValue] =
+    useState<CurrencySelectOption>();
+
   useEffect(() => {
-    currentSelectValue.current = memoizedSelectOptions.filter(
+    function updateSelectOptions() {
+      const width =
+        window.innerWidth ||
+        document.documentElement.clientWidth ||
+        document.body.clientWidth;
+      if (width > 450) {
+        setSelectOptions(memoizedDesktopOptions);
+      } else {
+        setSelectOptions(memoizedMobileOptions);
+      }
+    }
+    const newSelectVal = selectOptions?.filter(
       (item) => item.value === currencyCode
     )[0];
-  }, [currencyCode, memoizedSelectOptions]);
+    setCurrentSelectValue(newSelectVal);
+
+    const throttledUpdateSelectOptions = throttle(updateSelectOptions, 250);
+    updateSelectOptions();
+    window.addEventListener("resize", throttledUpdateSelectOptions);
+    return () => {
+      window.removeEventListener("resize", throttledUpdateSelectOptions);
+    };
+  }, [
+    currencyCode,
+    memoizedDesktopOptions,
+    memoizedMobileOptions,
+    selectOptions,
+  ]);
 
   const handleSelectChange = (
     option: CurrencySelectOption | null,
@@ -96,8 +139,8 @@ const CurrencySelector = ({
 
   return (
     <Select
-      options={memoizedSelectOptions}
-      value={currentSelectValue.current}
+      options={selectOptions}
+      value={currentSelectValue}
       instanceId={id}
       onChange={handleSelectChange}
       className={styles.selectContainer}

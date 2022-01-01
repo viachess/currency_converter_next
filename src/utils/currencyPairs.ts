@@ -70,15 +70,25 @@ export interface CurrencySelectOption {
   label: string;
 }
 
-export const getSelectOptions = (pairsObject: CurrencyHashTable) => {
+export const getSelectOptions = (
+  pairsObject: CurrencyHashTable,
+  mode: string
+) => {
   const formattedSelectOptions: CurrencySelectOption[] = Object.entries(
     pairsObject
   ).map((entry) => {
     const [currencyCode, currencyDescription] = entry;
-    return {
-      value: currencyCode,
-      label: `${currencyCode} - ${currencyDescription}`,
-    };
+    if (mode === "desktop") {
+      return {
+        value: currencyCode,
+        label: `${currencyCode} - ${currencyDescription}`,
+      };
+    } else {
+      return {
+        value: currencyCode,
+        label: currencyCode,
+      };
+    }
   });
   return formattedSelectOptions;
 };

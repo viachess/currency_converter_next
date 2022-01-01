@@ -3,6 +3,13 @@
     font-size: 1.2rem;
     outline: violet;
 }
+
+@media screen and (max-width: 450px) {
+    .selectContainer {
+        width: 120px;
+    }
+}
+
 .selectContainer:hover {
     outline: violet;
     border-color: violet;
