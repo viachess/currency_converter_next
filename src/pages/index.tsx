@@ -1,6 +1,6 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import styles from "@/styles/Home.module.css";
+import styles from "./Home.module.css";
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
