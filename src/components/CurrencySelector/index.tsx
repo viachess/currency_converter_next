@@ -13,6 +13,7 @@ interface SelectorProps {
   readonly id: string;
   readonly setCurrencyCode: React.Dispatch<React.SetStateAction<string>>;
   readonly currencyCode: string;
+  readonly selectOptions: CurrencySelectOption[];
 }
 
 function throttle(cb: Function, timeout: number) {
@@ -28,50 +29,33 @@ function throttle(cb: Function, timeout: number) {
   };
 }
 
-const CurrencySelector = ({
+const CurrencySelector: React.FC<SelectorProps> = ({
   id,
   setCurrencyCode,
   currencyCode,
-}: SelectorProps): JSX.Element => {
-  const memoizedDesktopOptions = useMemo(() => {
-    return getSelectOptions(currencyPairs, "desktop");
-  }, []);
-  const memoizedMobileOptions = useMemo(() => {
-    return getSelectOptions(currencyPairs, "mobile");
-  }, []);
-  const [selectOptions, setSelectOptions] = useState<CurrencySelectOption[]>();
-  const [currentSelectValue, setCurrentSelectValue] =
-    useState<CurrencySelectOption>();
+  selectOptions,
+}) => {
+  const defaultSelectValue = selectOptions.filter((selectOption) => {
+    return selectOption.value === currencyCode;
+  })[0];
+
+  const [isSearchable, setIsSearchable] = useState<boolean>(true);
 
   useEffect(() => {
-    function updateSelectOptions() {
+    function updateSearchableState() {
       const width =
         window.innerWidth ||
         document.documentElement.clientWidth ||
         document.body.clientWidth;
-      if (width > 450) {
-        setSelectOptions(memoizedDesktopOptions);
-      } else {
-        setSelectOptions(memoizedMobileOptions);
-      }
+      width > 450 ? setIsSearchable(true) : setIsSearchable(false);
     }
-    const newSelectVal = selectOptions?.filter(
-      (item) => item.value === currencyCode
-    )[0];
-    setCurrentSelectValue(newSelectVal);
-
-    const throttledUpdateSelectOptions = throttle(updateSelectOptions, 250);
-    updateSelectOptions();
-    window.addEventListener("resize", throttledUpdateSelectOptions);
+    const throttledUpdateSearchable = throttle(updateSearchableState, 100);
+    updateSearchableState();
+    window.addEventListener("resize", throttledUpdateSearchable);
     return () => {
-      window.removeEventListener("resize", throttledUpdateSelectOptions);
+      window.removeEventListener("resize", throttledUpdateSearchable);
     };
-  }, [
-    currencyCode,
-    memoizedDesktopOptions,
-    memoizedMobileOptions,
-    selectOptions,
-  ]);
+  }, [currencyCode, isSearchable]);
 
   const handleSelectChange = (
     option: CurrencySelectOption | null,
@@ -99,6 +83,7 @@ const CurrencySelector = ({
   };
 
   const selectorStyles = {
+    // Select box styling
     control: (styles: any) => {
       return {
         ...styles,
@@ -109,6 +94,7 @@ const CurrencySelector = ({
         },
       };
     },
+    // Styling of options in the dropdown
     option: (styles: any, { isSelected, isFocused, data }: any) => {
       const violet = "rgb(238,130,238)";
       const fadedViolet = "rgba(238,130,238,0.2)";
@@ -125,23 +111,32 @@ const CurrencySelector = ({
           ...styles[":active"],
           backgroundColor: isSelected ? violet : undefined,
         },
+        "@media (max-width: 450px)": {
+          fontSize: "16px",
+        },
+      };
+    },
+    // Selected value styling
+    singleValue: (styles: any, { data }: any) => {
+      return {
+        ...styles,
+        "@media (max-width: 450px)": {
+          fontSize: "16px",
+        },
       };
     },
     input: (styles: any) => ({ ...styles }),
     placeholder: (styles: any, { data }: any) => ({
       ...styles,
-      ...flag(data?.value),
     }),
-    singleValue: (styles: any, { data }: any) => {
-      return { ...styles, ...flag(data.value) };
-    },
   };
 
   return (
     <Select
       options={selectOptions}
-      value={currentSelectValue}
+      defaultValue={defaultSelectValue}
       instanceId={id}
+      isSearchable={isSearchable}
       onChange={handleSelectChange}
       className={styles.selectContainer}
       styles={selectorStyles}

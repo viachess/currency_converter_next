@@ -1,6 +1,6 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import styles from "./Home.module.css";
+import styles from "@/styles/Home.module.css";
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
@@ -8,6 +8,24 @@ import ExchangeDetails from "@/components/ExchangeDetails";
 import CurrencySelector from "@/components/CurrencySelector";
 import { areEqual } from "@/utils";
 import AmountInput from "@/components/AmountInput";
+
+import { GetStaticProps } from "next";
+import { InferGetStaticPropsType } from "next";
+import {
+  currencyPairs,
+  CurrencySelectOption,
+  getSelectOptions,
+} from "@/utils/currencyPairs";
+
+export const getStaticProps: GetStaticProps = async (context) => {
+  const selectOptions: CurrencySelectOption[] = getSelectOptions(currencyPairs);
+
+  return {
+    props: {
+      selectOptions,
+    },
+  };
+};
 
 const SwapIcon = () => {
   return (
@@ -26,14 +44,14 @@ const SwapIcon = () => {
   );
 };
 
-// const PROXY_URL = "http://localhost:4400";
 const CONVERT_CURRENCY_URL = `/api/convert`;
 
-const Home: NextPage = () => {
+function Home({
+  selectOptions,
+}: InferGetStaticPropsType<typeof getStaticProps>) {
   const [fromCurrencyCode, setFromCurrencyCode] = useState<string>("USD");
   const [toCurrencyCode, setToCurrencyCode] = useState<string>("RUB");
   const [fromCurrencyValue, setFromCurrencyValue] = useState<number>(1);
-  const [toCurrencyValue, setToCurrencyValue] = useState<number | null>(null);
   const [currencyRatio, setCurrencyRatio] = useState<number>(1);
 
   const currenciesAreEqual = areEqual(fromCurrencyCode, toCurrencyCode);
@@ -41,7 +59,6 @@ const Home: NextPage = () => {
   useEffect(() => {
     if (currenciesAreEqual) {
       setToCurrencyCode(fromCurrencyCode);
-      setToCurrencyValue(1);
       setCurrencyRatio(1);
     } else {
       axios
@@ -51,7 +68,6 @@ const Home: NextPage = () => {
         })
         .then((response) => {
           const { CURRENCY_RATIO } = response.data;
-          setToCurrencyValue(Number(CURRENCY_RATIO));
           setCurrencyRatio(Number(CURRENCY_RATIO));
         })
         .catch((err) => {
@@ -65,7 +81,6 @@ const Home: NextPage = () => {
   }, [fromCurrencyCode, toCurrencyCode, currenciesAreEqual]);
 
   const swapCurrencies = () => {
-    // 1. swap country codes
     let tmp = fromCurrencyCode;
     setFromCurrencyCode(toCurrencyCode);
     setToCurrencyCode(tmp);
@@ -97,6 +112,7 @@ const Home: NextPage = () => {
               id="from-currency-selector"
               currencyCode={fromCurrencyCode}
               setCurrencyCode={setFromCurrencyCode}
+              selectOptions={selectOptions}
             />
             <button
               type="button"
@@ -109,6 +125,7 @@ const Home: NextPage = () => {
               id="to-currency-selector"
               currencyCode={toCurrencyCode}
               setCurrencyCode={setToCurrencyCode}
+              selectOptions={selectOptions}
             />
           </div>
         </div>
@@ -121,6 +138,6 @@ const Home: NextPage = () => {
       </footer>
     </div>
   );
-};
+}
 
 export default Home;

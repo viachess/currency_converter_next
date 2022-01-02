@@ -66,29 +66,19 @@ export const currencyPairs: CurrencyHashTable = {
 };
 
 export interface CurrencySelectOption {
-  value: CurrencyCode;
   label: string;
+  value: CurrencyCode;
 }
 
-export const getSelectOptions = (
-  pairsObject: CurrencyHashTable,
-  mode: string
-) => {
+export const getSelectOptions = (pairsObject: CurrencyHashTable) => {
   const formattedSelectOptions: CurrencySelectOption[] = Object.entries(
     pairsObject
   ).map((entry) => {
     const [currencyCode, currencyDescription] = entry;
-    if (mode === "desktop") {
-      return {
-        value: currencyCode,
-        label: `${currencyCode} - ${currencyDescription}`,
-      };
-    } else {
-      return {
-        value: currencyCode,
-        label: currencyCode,
-      };
-    }
+    return {
+      label: `${currencyCode} - ${currencyDescription}`,
+      value: currencyCode,
+    };
   });
   return formattedSelectOptions;
 };

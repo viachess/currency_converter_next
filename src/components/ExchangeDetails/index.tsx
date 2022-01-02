@@ -1,50 +1,69 @@
-import React from "react";
-
-import { areEqual } from "../../utils";
+import React, { useMemo, useState, useEffect } from "react";
+import Image from "next/image";
+import { flagObject } from "@/utils/currencyPairs";
+import styles from "@/components/ExchangeDetails/ExchangeDetails.module.css";
 
 interface ExchangeDetailsProps {
-  fromCurrencyValue: number;
-  fromCurrencyCode: string;
-  toCurrencyCode: string;
-  currencyRatio: number;
+  readonly fromCurrencyValue: number;
+  readonly fromCurrencyCode: string;
+  readonly toCurrencyCode: string;
+  readonly currencyRatio: number;
+}
+interface CurrencyInfoProps {
+  value: number;
+  currencyCode: string;
 }
 
-export const ExchangeDetails = ({
+function FlagImage({ currencyCode }: { currencyCode: string }) {
+  return (
+    <Image
+      alt={`${currencyCode} flag`}
+      src={flagObject[currencyCode]}
+      width={23}
+      height={12}
+    />
+  );
+}
+const MemoizedFlagImage = React.memo(FlagImage);
+function CurrencyCode({ currencyCode }: { currencyCode: string }) {
+  return <>{currencyCode}</>;
+}
+const MemoizedCurrencyCode = React.memo(CurrencyCode);
+
+export const ExchangeDetails: React.FC<ExchangeDetailsProps> = ({
   fromCurrencyValue,
   fromCurrencyCode,
   toCurrencyCode,
   currencyRatio,
-}: ExchangeDetailsProps) => {
-  const areCodesEqual = areEqual(fromCurrencyCode, toCurrencyCode);
+}) => {
+  const toValue = fromCurrencyValue * currencyRatio;
+  let toCurrencyValue = 1;
+  if (toValue % 1 === 0) {
+    toCurrencyValue = toValue;
+  } else if (toValue % 1 > 0) {
+    toCurrencyValue = Number(toValue.toFixed(2));
+  }
 
-  const DisplaySameValues = (): JSX.Element => {
+  const CurrencyInfo: React.FC<CurrencyInfoProps> = ({
+    value,
+    currencyCode,
+  }) => {
     return (
-      <>
-        {1} {fromCurrencyCode} = {1} {fromCurrencyCode}
-      </>
-    );
-  };
-
-  const DisplayExchangeDetails = (): JSX.Element => {
-    const toValue = fromCurrencyValue * currencyRatio;
-    let displayNum;
-    if (toValue % 1 === 0) {
-      displayNum = toValue;
-    } else if (toValue % 1 > 0) {
-      displayNum = Number(toValue.toFixed(2));
-    }
-
-    return (
-      <>
-        {fromCurrencyValue} {fromCurrencyCode} = {displayNum} {toCurrencyCode}
-      </>
+      <div className={styles.currencyInfo}>
+        <MemoizedFlagImage currencyCode={currencyCode} />
+        <h4 className={styles.currencyValue}>
+          {value} <MemoizedCurrencyCode currencyCode={currencyCode} />
+        </h4>
+      </div>
     );
   };
 
   return (
-    <h3 translate="no">
-      {areCodesEqual ? <DisplaySameValues /> : <DisplayExchangeDetails />}
-    </h3>
+    <div translate="no" className={styles.exchangeDetailsContainer}>
+      <CurrencyInfo value={fromCurrencyValue} currencyCode={fromCurrencyCode} />
+      <p>=</p>
+      <CurrencyInfo value={toCurrencyValue} currencyCode={toCurrencyCode} />
+    </div>
   );
 };
 

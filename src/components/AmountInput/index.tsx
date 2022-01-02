@@ -1,12 +1,14 @@
 import React, { FormEvent, useState } from "react";
 import styles from "./AmountInput.module.css";
 
-const AmountInput = ({
-  id,
-  setFromCurrencyValue,
-}: {
+interface AmountInputProps {
   id: string;
   setFromCurrencyValue: React.Dispatch<React.SetStateAction<number>>;
+}
+
+const AmountInput: React.FC<AmountInputProps> = ({
+  id,
+  setFromCurrencyValue,
 }) => {
   const [errors, setErrors] = useState({
     notANumber: {
