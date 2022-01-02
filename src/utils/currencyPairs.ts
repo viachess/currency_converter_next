@@ -66,8 +66,8 @@ export const currencyPairs: CurrencyHashTable = {
 };
 
 export interface CurrencySelectOption {
-  value: CurrencyCode;
   label: string;
+  value: CurrencyCode;
 }
 
 export const getSelectOptions = (pairsObject: CurrencyHashTable) => {
@@ -76,8 +76,8 @@ export const getSelectOptions = (pairsObject: CurrencyHashTable) => {
   ).map((entry) => {
     const [currencyCode, currencyDescription] = entry;
     return {
-      value: currencyCode,
       label: `${currencyCode} - ${currencyDescription}`,
+      value: currencyCode,
     };
   });
   return formattedSelectOptions;

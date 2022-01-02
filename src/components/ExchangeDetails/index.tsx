@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import Image from "next/image";
 import { flagObject } from "@/utils/currencyPairs";
 import styles from "@/components/ExchangeDetails/ExchangeDetails.module.css";
@@ -13,6 +13,22 @@ interface CurrencyInfoProps {
   value: number;
   currencyCode: string;
 }
+
+function FlagImage({ currencyCode }: { currencyCode: string }) {
+  return (
+    <Image
+      alt={`${currencyCode} flag`}
+      src={flagObject[currencyCode]}
+      width={23}
+      height={12}
+    />
+  );
+}
+const MemoizedFlagImage = React.memo(FlagImage);
+function CurrencyCode({ currencyCode }: { currencyCode: string }) {
+  return <>{currencyCode}</>;
+}
+const MemoizedCurrencyCode = React.memo(CurrencyCode);
 
 export const ExchangeDetails: React.FC<ExchangeDetailsProps> = ({
   fromCurrencyValue,
@@ -34,14 +50,9 @@ export const ExchangeDetails: React.FC<ExchangeDetailsProps> = ({
   }) => {
     return (
       <div className={styles.currencyInfo}>
-        <Image
-          alt={`${currencyCode} flag`}
-          src={flagObject[currencyCode]}
-          width={23}
-          height={12}
-        />
+        <MemoizedFlagImage currencyCode={currencyCode} />
         <h4 className={styles.currencyValue}>
-          {value} {currencyCode}
+          {value} <MemoizedCurrencyCode currencyCode={currencyCode} />
         </h4>
       </div>
     );

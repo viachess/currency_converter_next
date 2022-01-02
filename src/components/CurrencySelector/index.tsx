@@ -13,6 +13,7 @@ interface SelectorProps {
   readonly id: string;
   readonly setCurrencyCode: React.Dispatch<React.SetStateAction<string>>;
   readonly currencyCode: string;
+  readonly selectOptions: CurrencySelectOption[];
 }
 
 function throttle(cb: Function, timeout: number) {
@@ -32,13 +33,12 @@ const CurrencySelector: React.FC<SelectorProps> = ({
   id,
   setCurrencyCode,
   currencyCode,
+  selectOptions,
 }) => {
-  const memoizedSelectOptions = useMemo(() => {
-    return getSelectOptions(currencyPairs);
-  }, []);
-  const [selectOptions, setSelectOptions] = useState<CurrencySelectOption[]>();
-  const [currentSelectValue, setCurrentSelectValue] =
-    useState<CurrencySelectOption>();
+  const defaultSelectValue = selectOptions.filter((selectOption) => {
+    return selectOption.value === currencyCode;
+  })[0];
+
   const [isSearchable, setIsSearchable] = useState<boolean>(true);
 
   useEffect(() => {
@@ -51,16 +51,11 @@ const CurrencySelector: React.FC<SelectorProps> = ({
     }
     const throttledUpdateSearchable = throttle(updateSearchableState, 100);
     updateSearchableState();
-    setSelectOptions(memoizedSelectOptions);
-    const newSelectValue = selectOptions?.filter(
-      (item) => item.value === currencyCode
-    )[0];
-    setCurrentSelectValue(newSelectValue);
     window.addEventListener("resize", throttledUpdateSearchable);
     return () => {
       window.removeEventListener("resize", throttledUpdateSearchable);
     };
-  }, [currencyCode, memoizedSelectOptions, selectOptions, isSearchable]);
+  }, [currencyCode, isSearchable]);
 
   const handleSelectChange = (
     option: CurrencySelectOption | null,
@@ -139,7 +134,7 @@ const CurrencySelector: React.FC<SelectorProps> = ({
   return (
     <Select
       options={selectOptions}
-      value={currentSelectValue}
+      defaultValue={defaultSelectValue}
       instanceId={id}
       isSearchable={isSearchable}
       onChange={handleSelectChange}

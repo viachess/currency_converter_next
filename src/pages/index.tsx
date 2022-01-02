@@ -9,6 +9,24 @@ import CurrencySelector from "@/components/CurrencySelector";
 import { areEqual } from "@/utils";
 import AmountInput from "@/components/AmountInput";
 
+import { GetStaticProps } from "next";
+import { InferGetStaticPropsType } from "next";
+import {
+  currencyPairs,
+  CurrencySelectOption,
+  getSelectOptions,
+} from "@/utils/currencyPairs";
+
+export const getStaticProps: GetStaticProps = async (context) => {
+  const selectOptions: CurrencySelectOption[] = getSelectOptions(currencyPairs);
+
+  return {
+    props: {
+      selectOptions,
+    },
+  };
+};
+
 const SwapIcon = () => {
   return (
     <svg
@@ -28,7 +46,9 @@ const SwapIcon = () => {
 
 const CONVERT_CURRENCY_URL = `/api/convert`;
 
-const Home: NextPage = () => {
+function Home({
+  selectOptions,
+}: InferGetStaticPropsType<typeof getStaticProps>) {
   const [fromCurrencyCode, setFromCurrencyCode] = useState<string>("USD");
   const [toCurrencyCode, setToCurrencyCode] = useState<string>("RUB");
   const [fromCurrencyValue, setFromCurrencyValue] = useState<number>(1);
@@ -92,6 +112,7 @@ const Home: NextPage = () => {
               id="from-currency-selector"
               currencyCode={fromCurrencyCode}
               setCurrencyCode={setFromCurrencyCode}
+              selectOptions={selectOptions}
             />
             <button
               type="button"
@@ -104,6 +125,7 @@ const Home: NextPage = () => {
               id="to-currency-selector"
               currencyCode={toCurrencyCode}
               setCurrencyCode={setToCurrencyCode}
+              selectOptions={selectOptions}
             />
           </div>
         </div>
@@ -116,6 +138,6 @@ const Home: NextPage = () => {
       </footer>
     </div>
   );
-};
+}
 
 export default Home;
