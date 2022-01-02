@@ -33,46 +33,34 @@ const CurrencySelector: React.FC<SelectorProps> = ({
   setCurrencyCode,
   currencyCode,
 }) => {
-  const memoizedDesktopOptions = useMemo(() => {
-    return getSelectOptions(currencyPairs, "desktop");
-  }, []);
-  const memoizedMobileOptions = useMemo(() => {
-    return getSelectOptions(currencyPairs, "mobile");
+  const memoizedSelectOptions = useMemo(() => {
+    return getSelectOptions(currencyPairs);
   }, []);
   const [selectOptions, setSelectOptions] = useState<CurrencySelectOption[]>();
   const [currentSelectValue, setCurrentSelectValue] =
     useState<CurrencySelectOption>();
+  const [isSearchable, setIsSearchable] = useState<boolean>(true);
 
   useEffect(() => {
-    function updateSelectOptions() {
-      // const width =
-      //   window.innerWidth ||
-      //   document.documentElement.clientWidth ||
-      //   document.body.clientWidth;
-      setSelectOptions(memoizedDesktopOptions);
-      // if (width > 450) {
-      //   setSelectOptions(memoizedDesktopOptions);
-      // } else {
-      //   setSelectOptions(memoizedMobileOptions);
-      // }
+    function updateSearchableState() {
+      const width =
+        window.innerWidth ||
+        document.documentElement.clientWidth ||
+        document.body.clientWidth;
+      width > 450 ? setIsSearchable(true) : setIsSearchable(false);
     }
-    const newSelectVal = selectOptions?.filter(
+    const throttledUpdateSearchable = throttle(updateSearchableState, 100);
+
+    setSelectOptions(memoizedSelectOptions);
+    const newSelectValue = selectOptions?.filter(
       (item) => item.value === currencyCode
     )[0];
-    setCurrentSelectValue(newSelectVal);
-
-    const throttledUpdateSelectOptions = throttle(updateSelectOptions, 250);
-    updateSelectOptions();
-    window.addEventListener("resize", throttledUpdateSelectOptions);
+    setCurrentSelectValue(newSelectValue);
+    window.addEventListener("resize", throttledUpdateSearchable);
     return () => {
-      window.removeEventListener("resize", throttledUpdateSelectOptions);
+      window.removeEventListener("resize", throttledUpdateSearchable);
     };
-  }, [
-    currencyCode,
-    memoizedDesktopOptions,
-    memoizedMobileOptions,
-    selectOptions,
-  ]);
+  }, [currencyCode, memoizedSelectOptions, selectOptions, isSearchable]);
 
   const handleSelectChange = (
     option: CurrencySelectOption | null,
@@ -115,7 +103,6 @@ const CurrencySelector: React.FC<SelectorProps> = ({
     option: (styles: any, { isSelected, isFocused, data }: any) => {
       const violet = "rgb(238,130,238)";
       const fadedViolet = "rgba(238,130,238,0.2)";
-      console.log(styles);
       return {
         ...styles,
         color: isSelected ? "#ffffff" : "rgb(7, 0, 0)",
@@ -154,6 +141,7 @@ const CurrencySelector: React.FC<SelectorProps> = ({
       options={selectOptions}
       value={currentSelectValue}
       instanceId={id}
+      isSearchable={isSearchable}
       onChange={handleSelectChange}
       className={styles.selectContainer}
       styles={selectorStyles}

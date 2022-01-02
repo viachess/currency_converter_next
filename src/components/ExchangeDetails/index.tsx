@@ -39,9 +39,8 @@ export const ExchangeDetails: React.FC<ExchangeDetailsProps> = ({
           src={flagObject[currencyCode]}
           width={23}
           height={12}
-          // className={styles.infoImage}
         />
-        <h4>
+        <h4 className={styles.currencyValue}>
           {value} {currencyCode}
         </h4>
       </div>
