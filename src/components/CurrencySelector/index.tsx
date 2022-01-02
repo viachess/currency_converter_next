@@ -50,7 +50,7 @@ const CurrencySelector: React.FC<SelectorProps> = ({
       width > 450 ? setIsSearchable(true) : setIsSearchable(false);
     }
     const throttledUpdateSearchable = throttle(updateSearchableState, 100);
-
+    updateSearchableState();
     setSelectOptions(memoizedSelectOptions);
     const newSelectValue = selectOptions?.filter(
       (item) => item.value === currencyCode
