@@ -28,11 +28,11 @@ function throttle(cb: Function, timeout: number) {
   };
 }
 
-const CurrencySelector = ({
+const CurrencySelector: React.FC<SelectorProps> = ({
   id,
   setCurrencyCode,
   currencyCode,
-}: SelectorProps): JSX.Element => {
+}) => {
   const memoizedDesktopOptions = useMemo(() => {
     return getSelectOptions(currencyPairs, "desktop");
   }, []);
@@ -45,15 +45,16 @@ const CurrencySelector = ({
 
   useEffect(() => {
     function updateSelectOptions() {
-      const width =
-        window.innerWidth ||
-        document.documentElement.clientWidth ||
-        document.body.clientWidth;
-      if (width > 450) {
-        setSelectOptions(memoizedDesktopOptions);
-      } else {
-        setSelectOptions(memoizedMobileOptions);
-      }
+      // const width =
+      //   window.innerWidth ||
+      //   document.documentElement.clientWidth ||
+      //   document.body.clientWidth;
+      setSelectOptions(memoizedDesktopOptions);
+      // if (width > 450) {
+      //   setSelectOptions(memoizedDesktopOptions);
+      // } else {
+      //   setSelectOptions(memoizedMobileOptions);
+      // }
     }
     const newSelectVal = selectOptions?.filter(
       (item) => item.value === currencyCode
@@ -99,6 +100,7 @@ const CurrencySelector = ({
   };
 
   const selectorStyles = {
+    // Select box styling
     control: (styles: any) => {
       return {
         ...styles,
@@ -109,9 +111,11 @@ const CurrencySelector = ({
         },
       };
     },
+    // Styling of options in the dropdown
     option: (styles: any, { isSelected, isFocused, data }: any) => {
       const violet = "rgb(238,130,238)";
       const fadedViolet = "rgba(238,130,238,0.2)";
+      console.log(styles);
       return {
         ...styles,
         color: isSelected ? "#ffffff" : "rgb(7, 0, 0)",
@@ -125,16 +129,24 @@ const CurrencySelector = ({
           ...styles[":active"],
           backgroundColor: isSelected ? violet : undefined,
         },
+        "@media (max-width: 450px)": {
+          fontSize: "16px",
+        },
+      };
+    },
+    // Selected value styling
+    singleValue: (styles: any, { data }: any) => {
+      return {
+        ...styles,
+        "@media (max-width: 450px)": {
+          fontSize: "16px",
+        },
       };
     },
     input: (styles: any) => ({ ...styles }),
     placeholder: (styles: any, { data }: any) => ({
       ...styles,
-      ...flag(data?.value),
     }),
-    singleValue: (styles: any, { data }: any) => {
-      return { ...styles, ...flag(data.value) };
-    },
   };
 
   return (

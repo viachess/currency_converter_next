@@ -11,8 +11,14 @@ export default async function handler(
 ) {
   const { method } = req;
   if (method === "POST") {
+    if (process.env.VERCEL_ENV === "development") {
+      res.status(200).json({
+        CURRENCY_RATIO: 230.1,
+      });
+      return;
+    }
     const CONVERT_API_KEY = process.env.CONVERT_API_KEY!;
-    console.log("API POST_REQUEST");
+
     const { FROM_CURRENCY_CODE, TO_CURRENCY_CODE } = req.body;
     const CURRENCY_PAIR = `${FROM_CURRENCY_CODE}_${TO_CURRENCY_CODE}`;
     console.log("currency pair");

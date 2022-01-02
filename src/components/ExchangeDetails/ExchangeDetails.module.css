@@ -1,0 +1,19 @@
+.exchangeDetailsContainer {
+    display:flex;   
+    align-items: center;
+    gap: 24px;
+}
+
+.currencyInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+}
+
+@media screen and (max-width: 900px) {
+    .exchangeDetailsContainer {
+        flex-direction: column;
+        gap: 1px;
+    }
+}

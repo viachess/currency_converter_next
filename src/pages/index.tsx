@@ -1,6 +1,6 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import styles from "./Home.module.css";
+import styles from "@/styles/Home.module.css";
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
@@ -26,14 +26,12 @@ const SwapIcon = () => {
   );
 };
 
-// const PROXY_URL = "http://localhost:4400";
 const CONVERT_CURRENCY_URL = `/api/convert`;
 
 const Home: NextPage = () => {
   const [fromCurrencyCode, setFromCurrencyCode] = useState<string>("USD");
   const [toCurrencyCode, setToCurrencyCode] = useState<string>("RUB");
   const [fromCurrencyValue, setFromCurrencyValue] = useState<number>(1);
-  const [toCurrencyValue, setToCurrencyValue] = useState<number | null>(null);
   const [currencyRatio, setCurrencyRatio] = useState<number>(1);
 
   const currenciesAreEqual = areEqual(fromCurrencyCode, toCurrencyCode);
@@ -41,7 +39,6 @@ const Home: NextPage = () => {
   useEffect(() => {
     if (currenciesAreEqual) {
       setToCurrencyCode(fromCurrencyCode);
-      setToCurrencyValue(1);
       setCurrencyRatio(1);
     } else {
       axios
@@ -51,7 +48,6 @@ const Home: NextPage = () => {
         })
         .then((response) => {
           const { CURRENCY_RATIO } = response.data;
-          setToCurrencyValue(Number(CURRENCY_RATIO));
           setCurrencyRatio(Number(CURRENCY_RATIO));
         })
         .catch((err) => {
@@ -65,7 +61,6 @@ const Home: NextPage = () => {
   }, [fromCurrencyCode, toCurrencyCode, currenciesAreEqual]);
 
   const swapCurrencies = () => {
-    // 1. swap country codes
     let tmp = fromCurrencyCode;
     setFromCurrencyCode(toCurrencyCode);
     setToCurrencyCode(tmp);

@@ -5,12 +5,14 @@
 }
 .errorContainer {
     min-height: 32px;
+    padding-bottom: 0.5rem;
 }
 
 .error {
     display: block;
     color: red;
     transition: all 0.3s ease;
+    text-align: center;
 }
 
 .amountInput input {
