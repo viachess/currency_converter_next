@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import Image from "next/image";
-import { flagObject } from "@/utils/currencyPairs";
+import { flagPathObject } from "@/utils/currencyPairs";
 import styles from "@/components/ExchangeDetails/ExchangeDetails.module.css";
 
 interface ExchangeDetailsProps {
@@ -18,9 +18,9 @@ function FlagImage({ currencyCode }: { currencyCode: string }) {
   return (
     <Image
       alt={`${currencyCode} flag`}
-      src={flagObject[currencyCode]}
-      width={23}
-      height={12}
+      src={flagPathObject[currencyCode]}
+      width={40}
+      height={25}
     />
   );
 }
