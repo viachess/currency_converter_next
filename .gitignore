@@ -8,6 +8,9 @@
 # testing
 /coverage
 
+/flags
+flagtransfer.js
+
 # vscode next js debugging settings
 /.vscode/
 

@@ -127,10 +127,10 @@ const CurrencySelector: React.FC<SelectorProps> = ({
         },
       };
     },
-    input: (styles: any) => ({ ...styles }),
-    placeholder: (styles: any, { data }: any) => ({
-      ...styles,
-    }),
+    // input: (styles: any) => ({ ...styles }),
+    // placeholder: (styles: any, { data }: any) => ({
+    //   ...styles,
+    // }),
   };
 
   return (

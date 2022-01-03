@@ -2,11 +2,15 @@
     display:flex;   
     align-items: center;
     gap: 24px;
-    padding: 1rem;
+    padding: 1rem 1.5rem;
     min-width: 250px;
     border-radius: 6px;
-    box-shadow: 1px 0px 6px 1px hsl(307deg 100% 61% / 37%);
-    background-color: rgba(255, 128, 240, 0.103);
+    box-shadow: 1px 0px 6px 1px rgba(255, 56, 232, 0.363);
+}
+
+.flagImage {
+    border: 1px solid rgba(197, 195, 195, 0.897) !important;
+    border-radius: 3px;
 }
 
 .currencyInfo {
@@ -26,3 +30,4 @@
         gap: 8px;
     }
 }
+

@@ -19,12 +19,14 @@ function FlagImage({ currencyCode }: { currencyCode: string }) {
     <Image
       alt={`${currencyCode} flag`}
       src={flagPathObject[currencyCode]}
-      width={40}
-      height={25}
+      width={32}
+      height={24}
+      className={styles.flagImage}
     />
   );
 }
 const MemoizedFlagImage = React.memo(FlagImage);
+
 function CurrencyCode({ currencyCode }: { currencyCode: string }) {
   return <>{currencyCode}</>;
 }
