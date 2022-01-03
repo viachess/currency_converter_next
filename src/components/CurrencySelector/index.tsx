@@ -4,7 +4,7 @@ import {
   currencyPairs,
   getSelectOptions,
   CurrencySelectOption,
-  flagObject,
+  flagPathObject,
 } from "../../utils/currencyPairs";
 
 import Select, { ActionMeta } from "react-select";
@@ -49,15 +49,17 @@ const CurrencySelector: React.FC<SelectorProps> = ({
         document.body.clientWidth;
       width > 450 ? setIsSearchable(true) : setIsSearchable(false);
     }
-    const throttledUpdateSearchable = throttle(updateSearchableState, 100);
     updateSearchableState();
+
+    const throttledUpdateSearchable = throttle(updateSearchableState, 100);
     window.addEventListener("resize", throttledUpdateSearchable);
+
     return () => {
       window.removeEventListener("resize", throttledUpdateSearchable);
     };
   }, [currencyCode, isSearchable]);
 
-  const handleSelectChange = (
+  const setNewCurrencyCode = (
     option: CurrencySelectOption | null,
     actionMeta: ActionMeta<CurrencySelectOption>
   ) => {
@@ -70,7 +72,7 @@ const CurrencySelector: React.FC<SelectorProps> = ({
       alignItems: "center",
       display: "flex",
       ":before": {
-        backgroundImage: `url('${flagObject[value]}')`,
+        backgroundImage: `url('${flagPathObject[value]}')`,
         backgroundPosition: "center",
         backgroundSize: "100%",
         content: '" "',
@@ -125,19 +127,19 @@ const CurrencySelector: React.FC<SelectorProps> = ({
         },
       };
     },
-    input: (styles: any) => ({ ...styles }),
-    placeholder: (styles: any, { data }: any) => ({
-      ...styles,
-    }),
+    // input: (styles: any) => ({ ...styles }),
+    // placeholder: (styles: any, { data }: any) => ({
+    //   ...styles,
+    // }),
   };
 
   return (
     <Select
       options={selectOptions}
-      defaultValue={defaultSelectValue}
       instanceId={id}
+      defaultValue={defaultSelectValue}
       isSearchable={isSearchable}
-      onChange={handleSelectChange}
+      onChange={setNewCurrencyCode}
       className={styles.selectContainer}
       styles={selectorStyles}
     />

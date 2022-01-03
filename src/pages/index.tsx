@@ -8,6 +8,7 @@ import ExchangeDetails from "@/components/ExchangeDetails";
 import CurrencySelector from "@/components/CurrencySelector";
 import { areEqual } from "@/utils";
 import AmountInput from "@/components/AmountInput";
+import HistoryGraph from "@/components/HistoryGraph";
 
 import { GetStaticProps } from "next";
 import { InferGetStaticPropsType } from "next";
@@ -53,6 +54,7 @@ function Home({
   const [toCurrencyCode, setToCurrencyCode] = useState<string>("RUB");
   const [fromCurrencyValue, setFromCurrencyValue] = useState<number>(1);
   const [currencyRatio, setCurrencyRatio] = useState<number>(1);
+  const [historyData, setHistoryData] = useState({});
 
   const currenciesAreEqual = areEqual(fromCurrencyCode, toCurrencyCode);
 
@@ -65,9 +67,12 @@ function Home({
         .post(CONVERT_CURRENCY_URL, {
           FROM_CURRENCY_CODE: fromCurrencyCode,
           TO_CURRENCY_CODE: toCurrencyCode,
+          // HISTORY: boolean
         })
         .then((response) => {
-          const { CURRENCY_RATIO } = response.data;
+          const { CURRENCY_RATIO, HISTORY_DATA } = response.data;
+          console.log("HISTORY_DATA");
+          console.log(HISTORY_DATA);
           setCurrencyRatio(Number(CURRENCY_RATIO));
         })
         .catch((err) => {
@@ -129,6 +134,7 @@ function Home({
             />
           </div>
         </div>
+        <HistoryGraph data={historyData} />
       </main>
 
       <footer className={styles.footer}>
