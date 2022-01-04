@@ -89,12 +89,13 @@ async function getAltConverterData({
   FROM_CURRENCY_CODE,
   TO_CURRENCY_CODE,
   period,
+  ALT_API_URL,
 }: {
   FROM_CURRENCY_CODE: string;
   TO_CURRENCY_CODE: string;
   period: TimePeriod;
+  ALT_API_URL: string;
 }) {
-  const ALT_API_URL = process.env.ALT_CONVERTER_URL!;
   const POST_PARAMS = {
     method: "spotRateHistory",
     data: {
@@ -105,7 +106,9 @@ async function getAltConverterData({
   };
 
   const response = await axios.post(ALT_API_URL, POST_PARAMS);
-  const data = await response.data;
+
+  const data = await response.data.data;
+  console.log(data);
   const REGULAR_RATE = data.CurrentInterbankRate;
   const INVERSE_RATE = data.CurrentInverseInterbankRate;
   const HISTORY_DATA = data.HistoricalPoints;
@@ -122,7 +125,7 @@ export default async function handler(
 ) {
   const { method } = req;
   if (method === "POST") {
-    if (process.env.VERCEL_ENV === "development") {
+    if (process.env.VERCEL_ENV === "developmen") {
       // res.status(200).json({
       //   CURRENCY_RATIO: 230.1,
       // });
@@ -197,12 +200,17 @@ export default async function handler(
     const { FROM_CURRENCY_CODE, TO_CURRENCY_CODE, withHistory } = req.body;
     console.log("prod request to api");
     try {
+      const ALT_API_URL = process.env.ALT_CONVERTER_URL!;
+      console.log(ALT_API_URL);
       const { HISTORY_DATA, REGULAR_RATE, INVERSE_RATE } =
         await getAltConverterData({
           FROM_CURRENCY_CODE,
           TO_CURRENCY_CODE,
           period: TimePeriod.YEAR,
+          ALT_API_URL,
         });
+
+      // console.log
 
       res.status(200).json({
         REGULAR_RATE,

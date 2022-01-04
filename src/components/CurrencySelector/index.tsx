@@ -67,8 +67,8 @@ const CurrencySelector: FC<SelectorProps> = ({
     option: CurrencySelectOption | null,
     actionMeta: ActionMeta<CurrencySelectOption>
   ) => {
-    // const newValue = option?.value;
-    // newValue ? setCurrencyCode(newValue) : null;
+    const newValue = option?.value;
+    newValue ? setCurrencyCode(newValue) : null;
     setSwapCount(0);
   };
 
