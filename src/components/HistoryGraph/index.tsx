@@ -7,7 +7,7 @@ interface HistoryGraphProps {
 const HistoryGraph: React.FC<HistoryGraphProps> = ({ data }) => {
   return (
     <div>
-      <p>123</p>
+      <p>Rates history line chart coming soon.</p>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect, useMemo, useRef } from "react";
+import React, { memo, useState, useEffect, useMemo, useRef, FC } from "react";
 import styles from "./CurrencySelector.module.css";
 import {
   currencyPairs,
@@ -14,6 +14,7 @@ interface SelectorProps {
   readonly setCurrencyCode: React.Dispatch<React.SetStateAction<string>>;
   readonly currencyCode: string;
   readonly selectOptions: CurrencySelectOption[];
+  readonly setSwapCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
 function throttle(cb: Function, timeout: number) {
@@ -29,15 +30,18 @@ function throttle(cb: Function, timeout: number) {
   };
 }
 
-const CurrencySelector: React.FC<SelectorProps> = ({
+const CurrencySelector: FC<SelectorProps> = ({
   id,
   setCurrencyCode,
   currencyCode,
   selectOptions,
+  setSwapCount,
 }) => {
-  const defaultSelectValue = selectOptions.filter((selectOption) => {
-    return selectOption.value === currencyCode;
-  })[0];
+  const selectValue = useMemo(() => {
+    return selectOptions.filter((selectOption) => {
+      return selectOption.value === currencyCode;
+    })[0];
+  }, [currencyCode, selectOptions]);
 
   const [isSearchable, setIsSearchable] = useState<boolean>(true);
 
@@ -59,12 +63,13 @@ const CurrencySelector: React.FC<SelectorProps> = ({
     };
   }, [currencyCode, isSearchable]);
 
-  const setNewCurrencyCode = (
+  const updateSwapCount = (
     option: CurrencySelectOption | null,
     actionMeta: ActionMeta<CurrencySelectOption>
   ) => {
     const newValue = option?.value;
     newValue ? setCurrencyCode(newValue) : null;
+    setSwapCount(0);
   };
 
   const flag = (value: string) => {
@@ -137,9 +142,10 @@ const CurrencySelector: React.FC<SelectorProps> = ({
     <Select
       options={selectOptions}
       instanceId={id}
-      defaultValue={defaultSelectValue}
+      value={selectValue}
+      // defaultValue={defaultSelectValue}
       isSearchable={isSearchable}
-      onChange={setNewCurrencyCode}
+      onChange={updateSwapCount}
       className={styles.selectContainer}
       styles={selectorStyles}
     />
