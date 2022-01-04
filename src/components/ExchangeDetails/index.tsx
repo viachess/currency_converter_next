@@ -1,13 +1,19 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo, FC } from "react";
 import Image from "next/image";
 import { flagPathObject } from "@/utils/currencyPairs";
 import styles from "@/components/ExchangeDetails/ExchangeDetails.module.css";
+import { CurrentRateMode } from "@/pages";
 
 interface ExchangeDetailsProps {
   readonly fromCurrencyValue: number;
   readonly fromCurrencyCode: string;
   readonly toCurrencyCode: string;
-  readonly currencyRatio: number;
+  readonly currentRateMode: CurrentRateMode.regular | CurrentRateMode.inverse;
+  readonly currencyRateState: {
+    regular: number;
+    inverse: number;
+  };
+  readonly isLoading: boolean;
 }
 interface CurrencyInfoProps {
   value: number;
@@ -32,24 +38,27 @@ function CurrencyCode({ currencyCode }: { currencyCode: string }) {
 }
 const MemoizedCurrencyCode = React.memo(CurrencyCode);
 
-export const ExchangeDetails: React.FC<ExchangeDetailsProps> = ({
+export const ExchangeDetails: FC<ExchangeDetailsProps> = ({
   fromCurrencyValue,
   fromCurrencyCode,
   toCurrencyCode,
-  currencyRatio,
+  currentRateMode,
+  currencyRateState,
+  isLoading,
 }) => {
-  const toValue = fromCurrencyValue * currencyRatio;
-  let toCurrencyValue = 1;
-  if (toValue % 1 === 0) {
-    toCurrencyValue = toValue;
-  } else if (toValue % 1 > 0) {
-    toCurrencyValue = Number(toValue.toFixed(2));
+  let toCurrencyValue: number = 1;
+  const currentRate = currencyRateState && currencyRateState[currentRateMode];
+
+  if (!Number.isNaN(Number(currentRate))) {
+    const newValue = fromCurrencyValue * currentRate;
+    if (newValue % 1 > 0) {
+      toCurrencyValue = Number(newValue.toFixed(2));
+    } else {
+      toCurrencyValue = Number(newValue);
+    }
   }
 
-  const CurrencyInfo: React.FC<CurrencyInfoProps> = ({
-    value,
-    currencyCode,
-  }) => {
+  const CurrencyInfo: FC<CurrencyInfoProps> = ({ value, currencyCode }) => {
     return (
       <div className={styles.currencyInfo}>
         <MemoizedFlagImage currencyCode={currencyCode} />
@@ -62,9 +71,18 @@ export const ExchangeDetails: React.FC<ExchangeDetailsProps> = ({
 
   return (
     <div translate="no" className={styles.exchangeDetailsContainer}>
-      <CurrencyInfo value={fromCurrencyValue} currencyCode={fromCurrencyCode} />
-      <p>=</p>
-      <CurrencyInfo value={toCurrencyValue} currencyCode={toCurrencyCode} />
+      {isLoading ? (
+        <h4>Loading...</h4>
+      ) : (
+        <>
+          <CurrencyInfo
+            value={fromCurrencyValue}
+            currencyCode={fromCurrencyCode}
+          />
+          <p>=</p>
+          <CurrencyInfo value={toCurrencyValue} currencyCode={toCurrencyCode} />
+        </>
+      )}
     </div>
   );
 };

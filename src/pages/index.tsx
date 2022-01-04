@@ -47,45 +47,78 @@ const SwapIcon = () => {
 
 const CONVERT_CURRENCY_URL = `/api/convert`;
 
+export enum CurrentRateMode {
+  regular = "regular",
+  inverse = "inverse",
+}
+
+interface CurrencyRateState {
+  regular: number;
+  inverse: number;
+}
+
 function Home({
   selectOptions,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   const [fromCurrencyCode, setFromCurrencyCode] = useState<string>("USD");
-  const [toCurrencyCode, setToCurrencyCode] = useState<string>("RUB");
+  const [toCurrencyCode, setToCurrencyCode] = useState<string>("EUR");
   const [fromCurrencyValue, setFromCurrencyValue] = useState<number>(1);
-  const [currencyRatio, setCurrencyRatio] = useState<number>(1);
-  const [historyData, setHistoryData] = useState({});
+  const [currencyRateState, setCurrencyRateState] =
+    useState<CurrencyRateState>();
 
+  const [historyData, setHistoryData] = useState({});
+  const [swapCount, setSwapCount] = useState<number>(0);
   const currenciesAreEqual = areEqual(fromCurrencyCode, toCurrencyCode);
+
+  const [currentRate, setCurrentRate] = useState<CurrentRateMode>(
+    CurrentRateMode.regular
+  );
+
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (currenciesAreEqual) {
       setToCurrencyCode(fromCurrencyCode);
-      setCurrencyRatio(1);
-    } else {
+      setCurrencyRateState({
+        regular: 1,
+        inverse: 1,
+      });
+      setSwapCount(0);
+    } else if (swapCount > 0 && swapCount % 2 !== 0) {
+      setCurrentRate(CurrentRateMode.inverse);
+    } else if (swapCount > 0 && swapCount % 2 === 0) {
+      setCurrentRate(CurrentRateMode.regular);
+    } else if (swapCount === 0) {
       axios
         .post(CONVERT_CURRENCY_URL, {
           FROM_CURRENCY_CODE: fromCurrencyCode,
           TO_CURRENCY_CODE: toCurrencyCode,
-          // HISTORY: boolean
+          withHistory: true,
         })
         .then((response) => {
-          const { CURRENCY_RATIO, HISTORY_DATA } = response.data;
-          console.log("HISTORY_DATA");
-          console.log(HISTORY_DATA);
-          setCurrencyRatio(Number(CURRENCY_RATIO));
+          const { REGULAR_RATE, INVERSE_RATE, HISTORY_DATA } = response.data;
+
+          setCurrencyRateState({
+            regular: REGULAR_RATE,
+            inverse: INVERSE_RATE,
+          });
+          setCurrentRate(CurrentRateMode.regular);
         })
         .catch((err) => {
           console.log("PROXY SERVER REQUEST ERROR");
           console.error(err);
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
     }
     return () => {
       // cleanup
     };
-  }, [fromCurrencyCode, toCurrencyCode, currenciesAreEqual]);
+  }, [fromCurrencyCode, toCurrencyCode, swapCount, currenciesAreEqual]);
 
   const swapCurrencies = () => {
+    setSwapCount((prevState) => (prevState += 1));
     let tmp = fromCurrencyCode;
     setFromCurrencyCode(toCurrencyCode);
     setToCurrencyCode(tmp);
@@ -105,7 +138,9 @@ function Home({
           fromCurrencyValue={fromCurrencyValue!}
           fromCurrencyCode={fromCurrencyCode}
           toCurrencyCode={toCurrencyCode}
-          currencyRatio={currencyRatio}
+          currencyRateState={currencyRateState!}
+          currentRateMode={currentRate}
+          isLoading={isLoading}
         />
         <div className={styles.comparisonContainer}>
           <AmountInput
@@ -118,6 +153,7 @@ function Home({
               currencyCode={fromCurrencyCode}
               setCurrencyCode={setFromCurrencyCode}
               selectOptions={selectOptions}
+              setSwapCount={setSwapCount}
             />
             <button
               type="button"
@@ -131,6 +167,7 @@ function Home({
               currencyCode={toCurrencyCode}
               setCurrencyCode={setToCurrencyCode}
               selectOptions={selectOptions}
+              setSwapCount={setSwapCount}
             />
           </div>
         </div>

@@ -2,8 +2,10 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 
 type ConversionInfo = {
-  CURRENCY_RATIO: number;
+  REGULAR_RATE: number;
+  INVERSE_RATE?: number;
   HISTORY_DATA?: object;
+  message?: string;
 };
 
 interface FreeQueryProps {
@@ -16,9 +18,7 @@ function createFreeConverterQuery({
   withHistory = false,
 }: FreeQueryProps) {
   const CONVERT_API_KEY = process.env.DEFAULT_CONVERTER_API_KEY!;
-  const API_CONVERT_BASE_URL = new URL(
-    "https://free.currconv.com/api/v7/convert"
-  );
+  const API_CONVERT_BASE_URL = new URL(process.env.DEFAULT_CONVERTER_URL!);
 
   const queryParams = new URLSearchParams(API_CONVERT_BASE_URL.search);
   queryParams.set("q", CURRENCY_PAIR);
@@ -60,17 +60,21 @@ async function getFreeConverterData({
   if (withHistory) {
     const today = new Date().toISOString().split("T")[0];
     const currencyData = await response.data;
-    const CURRENCY_RATIO = currencyData[CURRENCY_PAIR][today];
+    const REGULAR_RATE = currencyData[CURRENCY_PAIR][today];
+    const INVERSE_RATE = 1 / REGULAR_RATE;
     const HISTORY_DATA = currencyData[CURRENCY_PAIR];
     return {
-      CURRENCY_RATIO,
+      REGULAR_RATE,
+      INVERSE_RATE,
       HISTORY_DATA,
     };
   }
 
-  const CURRENCY_RATIO = await response.data[CURRENCY_PAIR];
+  const REGULAR_RATE = await response.data[CURRENCY_PAIR];
+  const INVERSE_RATE = 1 / REGULAR_RATE;
   return {
-    CURRENCY_RATIO,
+    REGULAR_RATE,
+    INVERSE_RATE,
   };
 }
 
@@ -102,7 +106,14 @@ async function getAltConverterData({
 
   const response = await axios.post(ALT_API_URL, POST_PARAMS);
   const data = await response.data;
-  return data;
+  const REGULAR_RATE = data.CurrentInterbankRate;
+  const INVERSE_RATE = data.CurrentInverseInterbankRate;
+  const HISTORY_DATA = data.HistoricalPoints;
+  return {
+    REGULAR_RATE,
+    INVERSE_RATE,
+    HISTORY_DATA,
+  };
 }
 
 export default async function handler(
@@ -112,10 +123,11 @@ export default async function handler(
   const { method } = req;
   if (method === "POST") {
     if (process.env.VERCEL_ENV === "development") {
-      res.status(200).json({
-        CURRENCY_RATIO: 230.1,
-      });
+      // res.status(200).json({
+      //   CURRENCY_RATIO: 230.1,
+      // });
       // ALT_API mock data for USD_EUR pair
+      console.log("dev request to api");
       const sample = {
         data: {
           CurrentInterbankRate: 0.877,
@@ -172,34 +184,56 @@ export default async function handler(
           fetchTime: 1641203703810,
         },
       };
-      // const ratio = sample.data.CurrentInterbankRate;
-      // res.status(200).json({
-      //   CURRENCY_RATIO: ratio,
-      // });
+      const REGULAR_RATE = sample.data.CurrentInterbankRate;
+      const INVERSE_RATE = sample.data.CurrentInverseInterbankRate;
+      const HISTORY_DATA = sample.data.HistoricalPoints;
+      res.status(200).json({
+        REGULAR_RATE,
+        INVERSE_RATE,
+        HISTORY_DATA,
+      });
       return;
     }
-    // second source url is under env var ALT_CONVERTER_URL
+    const { FROM_CURRENCY_CODE, TO_CURRENCY_CODE, withHistory } = req.body;
+    console.log("prod request to api");
     try {
-      const { FROM_CURRENCY_CODE, TO_CURRENCY_CODE } = req.body;
-
-      const { CURRENCY_RATIO, HISTORY_DATA } = await getFreeConverterData({
-        FROM_CURRENCY_CODE,
-        TO_CURRENCY_CODE,
-        withHistory: true,
-      });
-
-      // const data = await getAltConverterData({
-      //   FROM_CURRENCY_CODE,
-      //   TO_CURRENCY_CODE,
-      //   period: TimePeriod.YEAR,
-      // });
+      const { HISTORY_DATA, REGULAR_RATE, INVERSE_RATE } =
+        await getAltConverterData({
+          FROM_CURRENCY_CODE,
+          TO_CURRENCY_CODE,
+          period: TimePeriod.YEAR,
+        });
 
       res.status(200).json({
-        CURRENCY_RATIO,
+        REGULAR_RATE,
+        INVERSE_RATE,
         HISTORY_DATA,
       });
     } catch (err) {
-      console.error(err);
+      console.error(
+        "Alt API request failed, attempting a default convert request..."
+      );
+      try {
+        const { REGULAR_RATE, INVERSE_RATE, HISTORY_DATA } =
+          await getFreeConverterData({
+            FROM_CURRENCY_CODE,
+            TO_CURRENCY_CODE,
+            withHistory,
+          });
+
+        res.status(200).json({
+          REGULAR_RATE,
+          INVERSE_RATE,
+          HISTORY_DATA,
+        });
+      } catch (err) {
+        console.error("Both API requests failed, check URL validity.");
+        res.status(500).json({
+          REGULAR_RATE: 1,
+          INVERSE_RATE: 1,
+          message: "Internal API issue, try again later",
+        });
+      }
     }
   } else {
     res.setHeader("Allow", ["POST"]);
