@@ -108,9 +108,8 @@ async function getAltConverterData({
   const response = await axios.post(ALT_API_URL, POST_PARAMS);
 
   const data = await response.data.data;
-  console.log(data);
   const REGULAR_RATE = data.CurrentInterbankRate;
-  const INVERSE_RATE = data.CurrentInverseInterbankRate;
+  const INVERSE_RATE = 1 / REGULAR_RATE;
   const HISTORY_DATA = data.HistoricalPoints;
   return {
     REGULAR_RATE,
@@ -125,7 +124,7 @@ export default async function handler(
 ) {
   const { method } = req;
   if (method === "POST") {
-    if (process.env.VERCEL_ENV === "developmen") {
+    if (process.env.VERCEL_ENV === "development") {
       // res.status(200).json({
       //   CURRENCY_RATIO: 230.1,
       // });
@@ -188,7 +187,7 @@ export default async function handler(
         },
       };
       const REGULAR_RATE = sample.data.CurrentInterbankRate;
-      const INVERSE_RATE = sample.data.CurrentInverseInterbankRate;
+      const INVERSE_RATE = 1 / REGULAR_RATE;
       const HISTORY_DATA = sample.data.HistoricalPoints;
       res.status(200).json({
         REGULAR_RATE,
@@ -209,8 +208,6 @@ export default async function handler(
           period: TimePeriod.YEAR,
           ALT_API_URL,
         });
-
-      // console.log
 
       res.status(200).json({
         REGULAR_RATE,
