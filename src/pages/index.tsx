@@ -97,16 +97,7 @@ function Home({
         })
         .then((response) => {
           const { REGULAR_RATE, INVERSE_RATE, HISTORY_DATA } = response.data;
-          console.log("from_code", fromCurrencyCode);
-          console.log("to_code", toCurrencyCode);
-          console.log("reg_rate", REGULAR_RATE);
-          console.log("inv_rate", INVERSE_RATE);
-          // let inverse_rate;
-          // if (INVERSE_RATE === undefined) {
-          //   inverse_rate = 1 / REGULAR_RATE;
-          // } else {
-          //   inverse_rate = INVERSE_RATE;
-          // }
+
           setCurrencyRateState({
             regular: REGULAR_RATE,
             inverse: INVERSE_RATE,

@@ -129,7 +129,6 @@ export default async function handler(
       //   CURRENCY_RATIO: 230.1,
       // });
       // ALT_API mock data for USD_EUR pair
-      console.log("dev request to api");
       const sample = {
         data: {
           CurrentInterbankRate: 0.877,
@@ -197,7 +196,6 @@ export default async function handler(
       return;
     }
     const { FROM_CURRENCY_CODE, TO_CURRENCY_CODE, withHistory } = req.body;
-    console.log("prod request to api");
     try {
       const ALT_API_URL = process.env.ALT_CONVERTER_URL!;
       console.log(ALT_API_URL);
