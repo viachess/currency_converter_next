@@ -1,10 +1,16 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 
+interface HistoryPoint {
+  PointInTime: number;
+  InterbankRate: number;
+  InverseInterbankRate?: number;
+}
+
 type ConversionInfo = {
   REGULAR_RATE: number;
   INVERSE_RATE?: number;
-  HISTORY_DATA?: object;
+  HISTORY_DATA?: HistoryPoint[];
   message?: string;
 };
 
@@ -195,10 +201,11 @@ export default async function handler(
       });
       return;
     }
+
     const { FROM_CURRENCY_CODE, TO_CURRENCY_CODE, withHistory } = req.body;
     try {
       const ALT_API_URL = process.env.ALT_CONVERTER_URL!;
-      console.log(ALT_API_URL);
+
       const { HISTORY_DATA, REGULAR_RATE, INVERSE_RATE } =
         await getAltConverterData({
           FROM_CURRENCY_CODE,
@@ -223,11 +230,20 @@ export default async function handler(
             TO_CURRENCY_CODE,
             withHistory,
           });
-
+        const formattedHistoryData = Object.entries(HISTORY_DATA).map(
+          (historyItem) => {
+            const [date, value] = historyItem;
+            const unixMillisecondsDate = Date.parse(date);
+            return {
+              PointInTime: unixMillisecondsDate,
+              InterbankRate: Number(value),
+            };
+          }
+        );
         res.status(200).json({
           REGULAR_RATE,
           INVERSE_RATE,
-          HISTORY_DATA,
+          HISTORY_DATA: formattedHistoryData,
         });
       } catch (err) {
         console.error("Both API requests failed, check URL validity.");

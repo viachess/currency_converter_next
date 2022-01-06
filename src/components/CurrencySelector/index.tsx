@@ -17,7 +17,7 @@ interface SelectorProps {
   readonly setSwapCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
-function throttle(cb: Function, timeout: number) {
+export function throttle(cb: Function, timeout: number) {
   let wait = false;
   return function () {
     if (!wait) {

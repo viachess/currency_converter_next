@@ -7,10 +7,9 @@ import axios from "axios";
 import * as d3 from "d3";
 
 import ExchangeDetails from "@/components/ExchangeDetails";
-import CurrencySelector from "@/components/CurrencySelector";
+import CurrencySelector, { throttle } from "@/components/CurrencySelector";
 import { areEqual } from "@/utils";
 import AmountInput from "@/components/AmountInput";
-import HistoryGraph from "@/components/HistoryGraph";
 
 import { GetStaticProps } from "next";
 import { InferGetStaticPropsType } from "next";
@@ -59,6 +58,7 @@ interface CurrencyRateState {
   inverse: number;
 }
 
+type Datum = { x: number; y: number };
 interface HistoryObject {
   date: Date;
   value: number;
@@ -83,11 +83,11 @@ const formatHistoryData = (data: any): HistoryDataContainer => {
     const inverseRate = 1 / InterbankRate;
 
     regular.push({
-      date: parsedUnixDate,
+      date: parsedUnixDate!,
       value: InterbankRate,
     });
     inverse.push({
-      date: parsedUnixDate,
+      date: parsedUnixDate!,
       value: inverseRate,
     });
   });
@@ -115,9 +115,63 @@ function Home({
     CurrentRateMode.regular
   );
 
+  // const [chartWidth, setChartWidth] = useState<number>(600);
   const [isLoading, setIsLoading] = useState(true);
 
-  const historyChartRef = useRef<HTMLDivElement>(null);
+  const margin = { top: 10, right: 30, bottom: 30, left: 60 },
+    width = 600 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+
+  const historyChartElementRef = useRef<HTMLDivElement>(null);
+  const chartSVGRef =
+    useRef<d3.Selection<SVGGElement, unknown, null, undefined>>();
+  useEffect(() => {
+    const svg = d3
+      .select(historyChartElementRef.current)
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+    chartSVGRef.current = svg;
+
+    // function updateGraphWidth() {
+    //   const width =
+    //     window.innerWidth ||
+    //     document.documentElement.clientWidth ||
+    //     document.body.clientWidth;
+    //   if (width < 680) {
+    //     setChartWidth(400);
+    //     console.log("chartWidth");
+    //     console.log(chartSVGRef.current!);
+    //     chartSVGRef.current!.attr(
+    //       "width",
+    //       chartWidth + margin.left + margin.right
+    //     );
+    //   } else if (width < 450) {
+    //     setChartWidth(300);
+    //     chartSVGRef.current!.attr(
+    //       "width",
+    //       chartWidth + margin.left + margin.right
+    //     );
+    //   } else if (width >= 680) {
+    //     setChartWidth(600);
+    //     chartSVGRef.current!.attr(
+    //       "width",
+    //       chartWidth + margin.left + margin.right
+    //     );
+    //   }
+    // chartSVGRef.current.attr("width")
+    // }
+    // const throttledUpdateGraphWidth = throttle(updateGraphWidth, 100);
+    // window.addEventListener("resize", throttledUpdateGraphWidth);
+
+    // return () => {
+    //   window.removeEventListener("resize", throttledUpdateGraphWidth);
+    // };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (currenciesAreEqual) {
@@ -140,9 +194,8 @@ function Home({
         })
         .then((response) => {
           const { REGULAR_RATE, INVERSE_RATE, HISTORY_DATA } = response.data;
-
           const formattedHistoryData = formatHistoryData(HISTORY_DATA);
-          setHistoryData(formatHistoryData);
+          setHistoryData(formattedHistoryData);
 
           setCurrencyRateState({
             regular: REGULAR_RATE,
@@ -165,28 +218,14 @@ function Home({
   }, [fromCurrencyCode, toCurrencyCode, swapCount, currenciesAreEqual]);
 
   useEffect(() => {
-    const margin = { top: 10, right: 30, bottom: 30, left: 60 },
-      width = 600 - margin.left - margin.right,
-      height = 400 - margin.top - margin.bottom;
-
-    // append the svg object to the body of the page
-    // .select("#my-dataviz")
-    const svg = d3
-      .select(historyChartRef.current)
-      .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
-
-    const displayChart = (data: HistoryObject[]) => {
+    const displayChart = (data: HistoryObject[], svg: any) => {
+      svg.html("");
       const x = d3
         .scaleTime()
-
         .domain(
           d3.extent(data, function (d) {
             return d.date;
-          })
+          }) as [Date, Date]
         )
         .range([0, width]);
       svg
@@ -199,7 +238,7 @@ function Home({
         .scaleLinear()
         .domain([
           d3.min(data, function (d) {
-            return +d.value - +d.value * 0.02;
+            return +d.value - +d.value * 0.01;
           }) as number,
           d3.max(data, function (d) {
             return +d.value;
@@ -208,6 +247,15 @@ function Home({
         .range([height, 0]);
       svg.append("g").call(d3.axisLeft(y));
 
+      const lineGenerator = d3
+        .line<HistoryObject>()
+        .x((d: HistoryObject) => {
+          return x(d.date);
+        })
+        .y((d: HistoryObject) => {
+          return y(d.value);
+        });
+
       // Add the line
       svg
         .append("path")
@@ -215,22 +263,13 @@ function Home({
         .attr("fill", "none")
         .attr("stroke", "steelblue")
         .attr("stroke-width", 1.5)
-        .attr(
-          "d",
-          d3
-            .line()
-            .x(function (d) {
-              return x(d.date);
-            })
-            .y(function (d) {
-              return y(d.value);
-            })
-        );
+        .attr("d", lineGenerator);
     };
     if (historyData) {
-      displayChart(historyData[currentRate]);
+      displayChart(historyData[currentRate], chartSVGRef.current);
     }
-  }, [historyData, currentRate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyData?.regular, historyData?.inverse, currentRate]);
 
   const swapCurrencies = () => {
     setSwapCount((prevState) => (prevState += 1));
@@ -286,8 +325,7 @@ function Home({
             />
           </div>
         </div>
-        <div ref={historyChartRef}></div>
-        {/* <HistoryGraph data={historyData} /> */}
+        <div ref={historyChartElementRef}></div>
       </main>
 
       <footer className={styles.footer}>
