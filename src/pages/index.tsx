@@ -119,7 +119,7 @@ function Home({
   const [isLoading, setIsLoading] = useState(true);
 
   const margin = { top: 10, right: 30, bottom: 30, left: 60 },
-    width = 600 - margin.left - margin.right,
+    width = 900 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
 
   const historyChartElementRef = useRef<HTMLDivElement>(null);
@@ -127,6 +127,8 @@ function Home({
     useRef<d3.Selection<SVGGElement, unknown, null, undefined>>();
   useEffect(() => {
     const svg = d3
+      // select a pre-created div element. Might be a decent option to pre-create an svg
+      // and update it with following 'attr' methods.
       .select(historyChartElementRef.current)
       .append("svg")
       .attr("width", width + margin.left + margin.right)
@@ -134,41 +136,6 @@ function Home({
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     chartSVGRef.current = svg;
-
-    // function updateGraphWidth() {
-    //   const width =
-    //     window.innerWidth ||
-    //     document.documentElement.clientWidth ||
-    //     document.body.clientWidth;
-    //   if (width < 680) {
-    //     setChartWidth(400);
-    //     console.log("chartWidth");
-    //     console.log(chartSVGRef.current!);
-    //     chartSVGRef.current!.attr(
-    //       "width",
-    //       chartWidth + margin.left + margin.right
-    //     );
-    //   } else if (width < 450) {
-    //     setChartWidth(300);
-    //     chartSVGRef.current!.attr(
-    //       "width",
-    //       chartWidth + margin.left + margin.right
-    //     );
-    //   } else if (width >= 680) {
-    //     setChartWidth(600);
-    //     chartSVGRef.current!.attr(
-    //       "width",
-    //       chartWidth + margin.left + margin.right
-    //     );
-    //   }
-    // chartSVGRef.current.attr("width")
-    // }
-    // const throttledUpdateGraphWidth = throttle(updateGraphWidth, 100);
-    // window.addEventListener("resize", throttledUpdateGraphWidth);
-
-    // return () => {
-    //   window.removeEventListener("resize", throttledUpdateGraphWidth);
-    // };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -194,6 +161,7 @@ function Home({
         })
         .then((response) => {
           const { REGULAR_RATE, INVERSE_RATE, HISTORY_DATA } = response.data;
+
           const formattedHistoryData = formatHistoryData(HISTORY_DATA);
           setHistoryData(formattedHistoryData);
 

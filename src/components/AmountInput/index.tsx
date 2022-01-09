@@ -1,5 +1,6 @@
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useState, useReducer } from "react";
 import styles from "./AmountInput.module.css";
+import errorReducer, { errorMessages } from "./errorStore";
 
 interface AmountInputProps {
   id: string;
@@ -10,16 +11,14 @@ const AmountInput: React.FC<AmountInputProps> = ({
   id,
   setFromCurrencyValue,
 }) => {
-  const [errors, setErrors] = useState({
-    notANumber: {
-      message: "Invalid input, please enter a number",
-      status: false,
-    },
-    tooLong: {
-      message: "Entered number must be less than 10 symbols long",
-      status: false,
-    },
-  });
+  const initialErrorState = {
+    notANumber: false,
+    tooLong: false,
+  };
+  const [errors, dispatchErrorsAction] = useReducer(
+    errorReducer,
+    initialErrorState
+  );
 
   const MAX_ALLOWED_NUMBER = 1000000000;
   const inputHandler = (e: FormEvent<HTMLInputElement>) => {
@@ -28,26 +27,12 @@ const AmountInput: React.FC<AmountInputProps> = ({
     const isEmpty = trimmedValue.length === 0;
     const isNumber = !Number.isNaN(Number(trimmedValue));
     if (!isEmpty && isNumber) {
-      setErrors({
-        ...errors,
-        tooLong: {
-          ...errors.tooLong,
-          status: false,
-        },
-        notANumber: {
-          ...errors.notANumber,
-          status: false,
-        },
+      dispatchErrorsAction({
+        type: "hideAllErrors",
       });
 
       if (Number(trimmedValue) >= MAX_ALLOWED_NUMBER) {
-        setErrors({
-          ...errors,
-          tooLong: {
-            ...errors.tooLong,
-            status: true,
-          },
-        });
+        dispatchErrorsAction({ type: "showLengthError" });
         return;
       }
       const isInteger = Number.isInteger(Number(trimmedValue));
@@ -67,16 +52,12 @@ const AmountInput: React.FC<AmountInputProps> = ({
         }
       }
     } else if (!isEmpty && !isNumber) {
-      setErrors({
-        ...errors,
-        tooLong: {
-          ...errors.tooLong,
-          status: false,
-        },
-        notANumber: {
-          ...errors.notANumber,
-          status: true,
-        },
+      dispatchErrorsAction({
+        type: "hideLengthError",
+      });
+
+      dispatchErrorsAction({
+        type: "showNanError",
       });
       return;
     }
@@ -86,16 +67,8 @@ const AmountInput: React.FC<AmountInputProps> = ({
     const target = e.target as HTMLInputElement;
     const isEmpty = target.value.trim().length === 0;
     if (isEmpty) {
-      setErrors({
-        ...errors,
-        tooLong: {
-          ...errors.tooLong,
-          status: false,
-        },
-        notANumber: {
-          ...errors.notANumber,
-          status: false,
-        },
+      dispatchErrorsAction({
+        type: "hideAllErrors",
       });
       setFromCurrencyValue(1);
     }
@@ -106,10 +79,11 @@ const AmountInput: React.FC<AmountInputProps> = ({
       <div className={styles.errorContainer}>
         {Object.entries(errors).map((entry, index) => {
           const [errorName, errorValue] = entry;
-          if (errorValue.status) {
+          if (errorValue) {
+            const errorMessage = errorMessages[errorName];
             return (
               <small key={index} className={styles.error}>
-                {errorValue.message}
+                {errorMessage}
               </small>
             );
           }
