@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef, useMemo, FC } from "react";
+import React, { FC } from "react";
 import Image from "next/image";
 import { flagPathObject } from "@/utils/currencyPairs";
 import styles from "@/components/ExchangeDetails/ExchangeDetails.module.css";
-import { CurrentRateMode } from "@/pages";
+import { CurrentRateMode } from "@/features/home/types";
 
 interface ExchangeDetailsProps {
   readonly fromCurrencyValue: number;

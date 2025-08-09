@@ -1,27 +1,34 @@
-import type { NextPage } from "next";
-import Head from "next/head";
 import styles from "@/styles/Home.module.css";
-import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-
+import Head from "next/head";
+import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
-import ExchangeDetails from "@/components/ExchangeDetails";
-import CurrencySelector, { throttle } from "@/components/CurrencySelector";
-import { areEqual } from "@/utils";
 import AmountInput from "@/components/AmountInput";
-
-import { GetStaticProps } from "next";
-import { InferGetStaticPropsType } from "next";
+import CurrencySelector from "@/components/CurrencySelector";
+import ExchangeDetails from "@/components/ExchangeDetails";
+import SwapIcon from "@/components/SwapIcon";
+import { areEqual } from "@/utils";
 import {
   currencyPairs,
   CurrencySelectOption,
   getSelectOptions,
 } from "@/utils/currencyPairs";
+import { GetStaticProps, InferGetStaticPropsType } from "next";
+import {
+  CONVERT_CURRENCY_URL,
+  chartDimensions,
+} from "@/features/home/constants";
+import { formatHistoryData } from "@/features/home/utils";
+import {
+  CurrentRateMode,
+  CurrencyRateState,
+  HistoryDataContainer,
+  HistoryObject,
+} from "@/features/home/types";
 
-export const getStaticProps: GetStaticProps = async (context) => {
+export const getStaticProps: GetStaticProps = async () => {
   const selectOptions: CurrencySelectOption[] = getSelectOptions(currencyPairs);
-
   return {
     props: {
       selectOptions,
@@ -29,76 +36,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
   };
 };
 
-const SwapIcon = () => {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-      className={styles.swapIcon}
-    >
-      <g data-name="Layer 2">
-        <g data-name="swap">
-          <path d="M4 9h13l-1.6 1.2a1 1 0 0 0-.2 1.4 1 1 0 0 0 .8.4 1 1 0 0 0 .6-.2l4-3a1 1 0 0 0 0-1.59l-3.86-3a1 1 0 0 0-1.23 1.58L17.08 7H4a1 1 0 0 0 0 2z" />
-          <path d="M20 16H7l1.6-1.2a1 1 0 0 0-1.2-1.6l-4 3a1 1 0 0 0 0 1.59l3.86 3a1 1 0 0 0 .61.21 1 1 0 0 0 .79-.39 1 1 0 0 0-.17-1.4L6.92 18H20a1 1 0 0 0 0-2z" />
-        </g>
-      </g>
-    </svg>
-  );
-};
-
-const CONVERT_CURRENCY_URL = `/api/convert`;
-
-export enum CurrentRateMode {
-  regular = "regular",
-  inverse = "inverse",
-}
-
-interface CurrencyRateState {
-  regular: number;
-  inverse: number;
-}
-
-type Datum = { x: number; y: number };
-interface HistoryObject {
-  date: Date;
-  value: number;
-}
-// interface HistoryObject {
-//   date: string;
-//   value: string;
-// }
-
-interface HistoryDataContainer {
-  regular: HistoryObject[];
-  inverse: HistoryObject[];
-}
-
-const formatHistoryData = (data: any): HistoryDataContainer => {
-  const regular: HistoryObject[] = [];
-  const inverse: HistoryObject[] = [];
-
-  data.forEach((currencyObject: any) => {
-    const { PointInTime, InterbankRate } = currencyObject;
-    const parsedUnixDate = d3.timeParse("%Q")(PointInTime);
-    const inverseRate = 1 / InterbankRate;
-
-    regular.push({
-      date: parsedUnixDate!,
-      value: InterbankRate,
-    });
-    inverse.push({
-      date: parsedUnixDate!,
-      value: inverseRate,
-    });
-  });
-
-  return {
-    regular,
-    inverse,
-  };
-};
-
-function Home({
+function HomePage({
   selectOptions,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   const [fromCurrencyCode, setFromCurrencyCode] = useState<string>("USD");
@@ -115,12 +53,11 @@ function Home({
     CurrentRateMode.regular
   );
 
-  // const [chartWidth, setChartWidth] = useState<number>(600);
   const [isLoading, setIsLoading] = useState(true);
 
-  const margin = { top: 10, right: 30, bottom: 30, left: 60 },
-    width = 900 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
+  const margin = chartDimensions.margin,
+    width = chartDimensions.width - margin.left - margin.right,
+    height = chartDimensions.height - margin.top - margin.bottom;
 
   const historyChartElementRef = useRef<HTMLDivElement>(null);
   const chartSVGRef =
@@ -180,61 +117,68 @@ function Home({
           setIsLoading(false);
         });
     }
-    return () => {
-      // cleanup
-    };
   }, [fromCurrencyCode, toCurrencyCode, swapCount, currenciesAreEqual]);
 
   useEffect(() => {
-    const displayChart = (data: HistoryObject[], svg: any) => {
+    const displayChart = (
+      currencyValueHistory: HistoryObject[],
+      svg: d3.Selection<SVGGElement, unknown, null, undefined>
+    ) => {
       svg.html("");
-      const x = d3
-        .scaleTime()
-        .domain(
-          d3.extent(data, function (d) {
-            return d.date;
-          }) as [Date, Date]
-        )
-        .range([0, width]);
+
+      const hasSinglePoint = currencyValueHistory.length === 1;
+      let xDomain: [Date, Date];
+      if (hasSinglePoint) {
+        const only = currencyValueHistory[0];
+        const start = new Date(only.date.getTime() - 12 * 60 * 60 * 1000);
+        const end = new Date(only.date.getTime() + 12 * 60 * 60 * 1000);
+        xDomain = [start, end];
+      } else {
+        xDomain = d3.extent(currencyValueHistory, (d) => d.date) as [
+          Date,
+          Date
+        ];
+      }
+
+      const x = d3.scaleTime().domain(xDomain).range([0, width]);
       svg
         .append("g")
         .attr("transform", `translate(0, ${height})`)
         .call(d3.axisBottom(x));
 
-      // Add Y axis
+      const minY = d3.min(currencyValueHistory, (d) => d.value) as number;
+      const maxY = d3.max(currencyValueHistory, (d) => d.value) as number;
+      const padding = (maxY || 1) * 0.01;
       const y = d3
         .scaleLinear()
-        .domain([
-          d3.min(data, function (d) {
-            return +d.value - +d.value * 0.01;
-          }) as number,
-          d3.max(data, function (d) {
-            return +d.value;
-          }) as number,
-        ])
+        .domain([Math.max(0, minY - padding), maxY + padding])
         .range([height, 0]);
       svg.append("g").call(d3.axisLeft(y));
 
-      const lineGenerator = d3
-        .line<HistoryObject>()
-        .x((d: HistoryObject) => {
-          return x(d.date);
-        })
-        .y((d: HistoryObject) => {
-          return y(d.value);
-        });
-
-      // Add the line
-      svg
-        .append("path")
-        .datum(data)
-        .attr("fill", "none")
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", 1.5)
-        .attr("d", lineGenerator);
+      if (!hasSinglePoint) {
+        const lineGenerator = d3
+          .line<HistoryObject>()
+          .x((d) => x(d.date))
+          .y((d) => y(d.value));
+        svg
+          .append("path")
+          .datum(currencyValueHistory)
+          .attr("fill", "none")
+          .attr("stroke", "steelblue")
+          .attr("stroke-width", 1.5)
+          .attr("d", lineGenerator);
+      } else {
+        const only = currencyValueHistory[0];
+        svg
+          .append("circle")
+          .attr("cx", x(only.date))
+          .attr("cy", y(only.value))
+          .attr("r", 3)
+          .attr("fill", "steelblue");
+      }
     };
     if (historyData) {
-      displayChart(historyData[currentRate], chartSVGRef.current);
+      displayChart(historyData[currentRate], chartSVGRef.current!);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [historyData?.regular, historyData?.inverse, currentRate]);
@@ -293,7 +237,9 @@ function Home({
             />
           </div>
         </div>
-        <div ref={historyChartElementRef}></div>
+        <div className={styles.chartContainer}>
+          <div ref={historyChartElementRef}></div>
+        </div>
       </main>
 
       <footer className={styles.footer}>
@@ -305,4 +251,4 @@ function Home({
   );
 }
 
-export default Home;
+export default HomePage;

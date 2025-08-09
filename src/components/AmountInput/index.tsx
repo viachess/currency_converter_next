@@ -1,16 +1,13 @@
-import React, { FormEvent, useState, useReducer } from "react";
+import React, { FC, FormEvent, useReducer } from "react";
 import styles from "./AmountInput.module.css";
-import errorReducer, { errorMessages } from "./errorStore";
+import errorReducer, { errorMessages } from "./inputErrorStore";
 
 interface AmountInputProps {
   id: string;
   setFromCurrencyValue: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const AmountInput: React.FC<AmountInputProps> = ({
-  id,
-  setFromCurrencyValue,
-}) => {
+const AmountInput: FC<AmountInputProps> = ({ id, setFromCurrencyValue }) => {
   const initialErrorState = {
     notANumber: false,
     tooLong: false,

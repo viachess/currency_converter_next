@@ -67,6 +67,12 @@
   padding: 1rem 0;
 }
 
+.chartNote {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: -0.5rem;
+}
+
 .selectorContainer {
   display: flex;
   align-items: center;
@@ -111,6 +117,13 @@
  .swapIcon {
    transform: rotate(90deg);
  }
+}
+
+.chartContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 .footer {
